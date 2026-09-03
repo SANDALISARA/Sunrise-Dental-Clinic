@@ -8,31 +8,26 @@ import java.nio.charset.StandardCharsets;
 public class RestClient {
 
     private static final String BASE =
-            System.getProperty(
-                    "service.base",
-                    "http://localhost:8080/sunrise-dental-service/api/"
-            );
+            "http://localhost:8080/sunrise-dental-clinic-service/api/";
 
-    public static String get(String path)
-            throws IOException {
+    public static String get(String path) throws IOException {
 
         HttpURLConnection connection =
                 (HttpURLConnection)
-                        new URL(BASE + path).openConnection();
+                new URL(BASE + path).openConnection();
 
         connection.setRequestMethod("GET");
+        connection.setRequestProperty("Accept", "application/json");
 
         return read(connection);
     }
 
-    public static String post(
-            String path,
-            String json)
+    public static String post(String path, String json)
             throws IOException {
 
         HttpURLConnection connection =
                 (HttpURLConnection)
-                        new URL(BASE + path).openConnection();
+                new URL(BASE + path).openConnection();
 
         connection.setRequestMethod("POST");
 
@@ -48,25 +43,25 @@ public class RestClient {
 
         connection.setDoOutput(true);
 
-        try (OutputStream output =
+        try (OutputStream os =
                      connection.getOutputStream()) {
 
-            output.write(
-                    json.getBytes(StandardCharsets.UTF_8)
+            os.write(
+                    json.getBytes(
+                            StandardCharsets.UTF_8
+                    )
             );
         }
 
         return read(connection);
     }
 
-    public static String put(
-            String path,
-            String json)
+    public static String put(String path, String json)
             throws IOException {
 
         HttpURLConnection connection =
                 (HttpURLConnection)
-                        new URL(BASE + path).openConnection();
+                new URL(BASE + path).openConnection();
 
         connection.setRequestMethod("PUT");
 
@@ -82,11 +77,13 @@ public class RestClient {
 
         connection.setDoOutput(true);
 
-        try (OutputStream output =
+        try (OutputStream os =
                      connection.getOutputStream()) {
 
-            output.write(
-                    json.getBytes(StandardCharsets.UTF_8)
+            os.write(
+                    json.getBytes(
+                            StandardCharsets.UTF_8
+                    )
             );
         }
 
@@ -98,7 +95,7 @@ public class RestClient {
 
         HttpURLConnection connection =
                 (HttpURLConnection)
-                        new URL(BASE + path).openConnection();
+                new URL(BASE + path).openConnection();
 
         connection.setRequestMethod("DELETE");
 
@@ -109,22 +106,21 @@ public class RestClient {
             HttpURLConnection connection)
             throws IOException {
 
-        int statusCode =
-                connection.getResponseCode();
+        int code = connection.getResponseCode();
 
-        InputStream inputStream;
+        InputStream stream;
 
-        if (statusCode >= 400) {
-            inputStream = connection.getErrorStream();
+        if (code >= 400) {
+            stream = connection.getErrorStream();
         } else {
-            inputStream = connection.getInputStream();
+            stream = connection.getInputStream();
         }
 
-        if (inputStream == null) {
+        if (stream == null) {
             return "";
         }
 
-        try (InputStream input = inputStream) {
+        try (InputStream input = stream) {
 
             return new String(
                     input.readAllBytes(),

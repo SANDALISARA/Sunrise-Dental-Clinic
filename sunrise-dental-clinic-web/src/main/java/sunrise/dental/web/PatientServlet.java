@@ -3,7 +3,9 @@ package sunrise.dental.web;
 import com.google.gson.JsonObject;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
@@ -12,7 +14,7 @@ public class PatientServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req,
-                          HttpServletResponse resp)
+                         HttpServletResponse resp)
             throws ServletException, IOException {
 
         String json = RestClient.get("patients");
@@ -25,12 +27,14 @@ public class PatientServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req,
-                           HttpServletResponse resp)
+                          HttpServletResponse resp)
             throws ServletException, IOException {
 
         req.setCharacterEncoding("UTF-8");
 
         String action = req.getParameter("action");
+
+        System.out.println("Patient action = " + action);
 
         if ("create".equals(action)) {
 
@@ -39,6 +43,16 @@ public class PatientServlet extends HttpServlet {
             patient.addProperty(
                     "patientName",
                     req.getParameter("patientName")
+            );
+
+            patient.addProperty(
+                    "dateOfBirth",
+                    req.getParameter("dateOfBirth")
+            );
+
+            patient.addProperty(
+                    "gender",
+                    req.getParameter("gender")
             );
 
             patient.addProperty(
@@ -57,18 +71,23 @@ public class PatientServlet extends HttpServlet {
             );
 
             patient.addProperty(
-                    "dateOfBirth",
-                    req.getParameter("dateOfBirth")
-            );
-
-            patient.addProperty(
                     "medicalHistory",
                     req.getParameter("medicalHistory")
             );
 
-            RestClient.post(
+            System.out.println(
+                    "Sending patient JSON: "
+                    + patient
+            );
+
+            String result = RestClient.post(
                     "patients",
                     patient.toString()
+            );
+
+            System.out.println(
+                    "REST response: "
+                    + result
             );
         }
 

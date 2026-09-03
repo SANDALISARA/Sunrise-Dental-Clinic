@@ -11,8 +11,7 @@
         return;
     }
 
-    String json =
-            (String) request.getAttribute("json");
+    String json = (String) request.getAttribute("json");
 %>
 
 <!DOCTYPE html>
@@ -22,9 +21,10 @@
 
     <meta charset="UTF-8">
 
-    <title>
-        Dentists - Sunrise Dental Clinic
-    </title>
+    <title>Appointments - Sunrise Dental Clinic</title>
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1"/>
 
     <style>
 
@@ -40,10 +40,7 @@
             margin: 30px auto;
         }
 
-        h1 {
-            color: #263238;
-        }
-
+        h1,
         h2 {
             color: #263238;
         }
@@ -69,8 +66,7 @@
 
         .form-grid {
             display: grid;
-            grid-template-columns:
-                    repeat(2, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 20px;
         }
 
@@ -79,16 +75,27 @@
             flex-direction: column;
         }
 
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
         label {
             font-weight: bold;
             margin-bottom: 6px;
         }
 
-        input {
+        input,
+        textarea,
+        select {
             padding: 11px;
             border: 1px solid #ccc;
             border-radius: 6px;
             font-size: 14px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
         }
 
         button {
@@ -114,23 +121,26 @@
         th {
             background-color: #37474f;
             color: white;
-            padding: 13px;
+            padding: 12px;
             text-align: left;
         }
 
         td {
-            padding: 13px;
-            border-bottom:
-                    1px solid #ddd;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
         }
 
         tr:hover {
             background-color: #f1f5f9;
         }
 
-        .dentist-number {
+        .appointment-number {
             font-weight: bold;
             color: #1976d2;
+        }
+
+        .status {
+            font-weight: bold;
         }
 
         .empty-message {
@@ -146,22 +156,23 @@
             .form-grid {
                 grid-template-columns: 1fr;
             }
+
+            table {
+                font-size: 12px;
+            }
         }
 
     </style>
 
 </head>
 
-
 <body>
 
 <div class="container">
 
-
     <h1>
-        Dentist Management
+        Appointment Management
     </h1>
-
 
     <div class="nav">
 
@@ -173,8 +184,8 @@
             Patients
         </a>
 
-        <a href="appointments">
-            Appointments
+        <a href="dentists">
+            Dentists
         </a>
 
         <a href="logout">
@@ -184,25 +195,20 @@
     </div>
 
 
-    <!-- REGISTER DENTIST -->
+    <!-- SCHEDULE APPOINTMENT -->
 
     <div class="card">
 
         <h2>
-            Register Dentist
+            Schedule Appointment
         </h2>
 
-
         <form method="post"
-              action="dentists">
-
-
-            <!-- VERY IMPORTANT -->
+              action="appointments">
 
             <input type="hidden"
                    name="action"
                    value="create">
-
 
             <div class="form-grid">
 
@@ -210,12 +216,12 @@
                 <div class="form-group">
 
                     <label>
-                        Dentist Name
+                        Patient ID
                     </label>
 
-                    <input type="text"
-                           name="dentistName"
-                           placeholder="e.g. Dr. Perera"
+                    <input name="patientId"
+                           type="number"
+                           min="1"
                            required>
 
                 </div>
@@ -224,12 +230,12 @@
                 <div class="form-group">
 
                     <label>
-                        Specialization
+                        Dentist ID
                     </label>
 
-                    <input type="text"
-                           name="specialization"
-                           placeholder="e.g. General Dentistry"
+                    <input name="dentistId"
+                           type="number"
+                           min="1"
                            required>
 
                 </div>
@@ -238,12 +244,11 @@
                 <div class="form-group">
 
                     <label>
-                        Phone Number
+                        Appointment Date
                     </label>
 
-                    <input type="text"
-                           name="phone"
-                           placeholder="e.g. 0771234567"
+                    <input name="appointmentDate"
+                           type="date"
                            required>
 
                 </div>
@@ -252,24 +257,35 @@
                 <div class="form-group">
 
                     <label>
-                        Email
+                        Appointment Time
                     </label>
 
-                    <input type="email"
-                           name="email"
-                           placeholder="e.g. dentist@gmail.com">
+                    <input name="appointmentTime"
+                           type="time"
+                           required>
 
                 </div>
 
 
-                <div>
+                <div class="form-group full-width">
+
+                    <label>
+                        Reason for Visit
+                    </label>
+
+                    <textarea name="reason"
+                              required></textarea>
+
+                </div>
+
+
+                <div class="full-width">
 
                     <button type="submit">
-                        Add Dentist
+                        Schedule Appointment
                     </button>
 
                 </div>
-
 
             </div>
 
@@ -278,36 +294,33 @@
     </div>
 
 
-    <!-- DENTIST TABLE -->
+    <!-- APPOINTMENT INFORMATION -->
 
     <div class="card">
 
         <h2>
-            Registered Dentists
+            Appointment Information
         </h2>
 
-
         <%
-            boolean hasDentists = false;
+            boolean hasAppointments = false;
 
             try {
 
-                if (json != null
-                        && !json.isBlank()) {
+                if (json != null && !json.isBlank()) {
 
                     JsonElement root =
                             JsonParser.parseString(json);
 
                     if (root.isJsonArray()) {
 
-                        JsonArray dentists =
+                        JsonArray appointments =
                                 root.getAsJsonArray();
 
-                        if (!dentists.isEmpty()) {
+                        if (!appointments.isEmpty()) {
 
-                            hasDentists = true;
+                            hasAppointments = true;
         %>
-
 
         <table>
 
@@ -316,98 +329,72 @@
             <tr>
 
                 <th>ID</th>
-
-                <th>
-                    Dentist No.
-                </th>
-
-                <th>
-                    Dentist Name
-                </th>
-
-                <th>
-                    Specialization
-                </th>
-
-                <th>
-                    Phone
-                </th>
-
-                <th>
-                    Email
-                </th>
+                <th>Appointment No.</th>
+                <th>Patient ID</th>
+                <th>Dentist ID</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Reason</th>
+                <th>Status</th>
 
             </tr>
 
             </thead>
 
-
             <tbody>
-
 
             <%
 
-                for (JsonElement element
-                        : dentists) {
+                for (JsonElement element : appointments) {
 
-                    JsonObject d =
-                            element
-                                    .getAsJsonObject();
-
+                    JsonObject a =
+                            element.getAsJsonObject();
 
                     String id =
-                            d.has("id")
-                            ? d.get("id")
-                                .getAsString()
+                            a.has("id")
+                            ? a.get("id").getAsString()
                             : "";
 
-
-                    String dentistNumber =
-                            d.has("dentistNumber")
-                            && !d.get("dentistNumber")
-                                 .isJsonNull()
-                            ? d.get("dentistNumber")
-                                .getAsString()
+                    String appointmentNumber =
+                            a.has("appointmentNumber")
+                            && !a.get("appointmentNumber").isJsonNull()
+                            ? a.get("appointmentNumber").getAsString()
                             : "";
 
-
-                    String dentistName =
-                            d.has("dentistName")
-                            && !d.get("dentistName")
-                                 .isJsonNull()
-                            ? d.get("dentistName")
-                                .getAsString()
+                    String patientId =
+                            a.has("patientId")
+                            ? a.get("patientId").getAsString()
                             : "";
 
-
-                    String specialization =
-                            d.has("specialization")
-                            && !d.get("specialization")
-                                 .isJsonNull()
-                            ? d.get("specialization")
-                                .getAsString()
+                    String dentistId =
+                            a.has("dentistId")
+                            ? a.get("dentistId").getAsString()
                             : "";
 
-
-                    String phone =
-                            d.has("phone")
-                            && !d.get("phone")
-                                 .isJsonNull()
-                            ? d.get("phone")
-                                .getAsString()
+                    String appointmentDate =
+                            a.has("appointmentDate")
+                            && !a.get("appointmentDate").isJsonNull()
+                            ? a.get("appointmentDate").getAsString()
                             : "";
 
-
-                    String email =
-                            d.has("email")
-                            && !d.get("email")
-                                 .isJsonNull()
-                            ? d.get("email")
-                                .getAsString()
+                    String appointmentTime =
+                            a.has("appointmentTime")
+                            && !a.get("appointmentTime").isJsonNull()
+                            ? a.get("appointmentTime").getAsString()
                             : "";
 
+                    String reason =
+                            a.has("reason")
+                            && !a.get("reason").isJsonNull()
+                            ? a.get("reason").getAsString()
+                            : "";
+
+                    String status =
+                            a.has("status")
+                            && !a.get("status").isJsonNull()
+                            ? a.get("status").getAsString()
+                            : "";
             %>
-
 
             <tr>
 
@@ -415,48 +402,45 @@
                     <%= id %>
                 </td>
 
-
-                <td class="dentist-number">
-                    <%= dentistNumber %>
+                <td class="appointment-number">
+                    <%= appointmentNumber %>
                 </td>
 
-
                 <td>
-                    <%= dentistName %>
+                    <%= patientId %>
                 </td>
 
-
                 <td>
-                    <%= specialization %>
+                    <%= dentistId %>
                 </td>
 
-
                 <td>
-                    <%= phone %>
+                    <%= appointmentDate %>
                 </td>
 
+                <td>
+                    <%= appointmentTime %>
+                </td>
 
                 <td>
-                    <%= email %>
+                    <%= reason %>
+                </td>
+
+                <td class="status">
+                    <%= status %>
                 </td>
 
             </tr>
 
-
             <%
-
                 }
-
             %>
-
 
             </tbody>
 
         </table>
 
-
         <%
-
                         }
                     }
                 }
@@ -464,33 +448,23 @@
             } catch (Exception e) {
 
                 System.out.println(
-                        "Dentist JSON error: "
+                        "Appointment JSON error: "
                                 + e.getMessage()
                 );
             }
 
-
-            if (!hasDentists) {
-
+            if (!hasAppointments) {
         %>
-
 
         <div class="empty-message">
-
-            No dentist records are available.
-
+            No appointment records are available.
         </div>
 
-
         <%
-
             }
-
         %>
 
-
     </div>
-
 
 </div>
 
