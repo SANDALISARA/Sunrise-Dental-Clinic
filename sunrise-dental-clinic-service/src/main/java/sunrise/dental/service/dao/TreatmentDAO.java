@@ -3,65 +3,93 @@ package sunrise.dental.service.dao;
 import sunrise.dental.service.dto.TreatmentDTO;
 import sunrise.dental.service.util.DB;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class TreatmentDAO {
 
+
+    // =========================================================
+    // GET ALL TREATMENTS
+    // =========================================================
     public List<TreatmentDTO> findAll()
             throws Exception {
 
         String sql =
-                "SELECT * FROM treatments ORDER BY treatment_name";
+                "SELECT * FROM treatments ORDER BY id DESC";
+
+        List<TreatmentDTO> treatments =
+                new ArrayList<>();
 
         try (
                 Connection c = DB.get();
+
                 PreparedStatement ps =
                         c.prepareStatement(sql);
+
                 ResultSet rs =
                         ps.executeQuery()
         ) {
 
-            List<TreatmentDTO> list =
-                    new ArrayList<>();
-
             while (rs.next()) {
-                list.add(map(rs));
-            }
 
-            return list;
+                treatments.add(
+                        map(rs)
+                );
+            }
         }
+
+        return treatments;
     }
 
+
+    // =========================================================
+    // GET TREATMENT BY ID
+    // =========================================================
     public TreatmentDTO findById(int id)
             throws Exception {
 
         String sql =
-                "SELECT * FROM treatments WHERE id=?";
+                "SELECT * FROM treatments WHERE id = ?";
 
         try (
                 Connection c = DB.get();
+
                 PreparedStatement ps =
                         c.prepareStatement(sql)
         ) {
 
-            ps.setInt(1, id);
+            ps.setInt(
+                    1,
+                    id
+            );
 
-            try (ResultSet rs =
-                         ps.executeQuery()) {
+            try (
+                    ResultSet rs =
+                            ps.executeQuery()
+            ) {
 
                 if (rs.next()) {
+
                     return map(rs);
                 }
-
-                return null;
             }
         }
+
+        return null;
     }
 
+
+    // =========================================================
+    // CREATE / ADD TREATMENT
+    // =========================================================
     public TreatmentDTO create(
-            TreatmentDTO d)
+            TreatmentDTO treatment)
             throws Exception {
 
         String sql = """
@@ -77,6 +105,7 @@ public class TreatmentDAO {
 
         try (
                 Connection c = DB.get();
+
                 PreparedStatement ps =
                         c.prepareStatement(
                                 sql,
@@ -84,79 +113,174 @@ public class TreatmentDAO {
                         )
         ) {
 
-            ps.setString(1, d.treatmentCode);
+            // Generate treatment code automatically
+            if (treatment.treatmentCode == null
+                    || treatment.treatmentCode.isBlank()) {
+
+                treatment.treatmentCode =
+                        "TRT-" + System.currentTimeMillis();
+            }
+
+
+            ps.setString(
+                    1,
+                    treatment.treatmentCode
+            );
+
 
             ps.setString(
                     2,
-                    d.treatmentName
+                    treatment.treatmentName
             );
+
 
             ps.setString(
                     3,
-                    d.description
+                    treatment.description
             );
+
 
             ps.setDouble(
                     4,
-                    d.price
+                    treatment.price
             );
 
-            ps.executeUpdate();
 
-            try (ResultSet rs =
-                         ps.getGeneratedKeys()) {
+            int rows =
+                    ps.executeUpdate();
+
+
+            System.out.println(
+                    "Treatment rows inserted: "
+                            + rows
+            );
+
+
+            try (
+                    ResultSet rs =
+                            ps.getGeneratedKeys()
+            ) {
 
                 if (rs.next()) {
-                    d.id = rs.getInt(1);
+
+                    treatment.id =
+                            rs.getInt(1);
                 }
             }
 
-            return d;
+
+            System.out.println(
+                    "Treatment added successfully"
+            );
+
+
+            System.out.println(
+                    "Treatment ID: "
+                            + treatment.id
+            );
+
+
+            System.out.println(
+                    "Treatment Code: "
+                            + treatment.treatmentCode
+            );
+
+
+            System.out.println(
+                    "Treatment Name: "
+                            + treatment.treatmentName
+            );
+
+
+            System.out.println(
+                    "Treatment Price: "
+                            + treatment.price
+            );
+
+
+            return treatment;
         }
     }
 
+
+    // =========================================================
+    // UPDATE TREATMENT
+    // =========================================================
     public boolean update(
             int id,
-            TreatmentDTO d)
+            TreatmentDTO treatment)
             throws Exception {
 
         String sql = """
                 UPDATE treatments
-                SET treatment_code=?,
-                    treatment_name=?,
-                    description=?,
-                    price=?
-                WHERE id=?
+                SET
+                    treatment_code = ?,
+                    treatment_name = ?,
+                    description = ?,
+                    price = ?
+                WHERE id = ?
                 """;
 
         try (
                 Connection c = DB.get();
+
                 PreparedStatement ps =
                         c.prepareStatement(sql)
         ) {
 
             ps.setString(
                     1,
-                    d.treatmentCode
+                    treatment.treatmentCode
             );
+
 
             ps.setString(
                     2,
-                    d.treatmentName
+                    treatment.treatmentName
             );
+
 
             ps.setString(
                     3,
-                    d.description
+                    treatment.description
             );
+
 
             ps.setDouble(
                     4,
-                    d.price
+                    treatment.price
             );
+
 
             ps.setInt(
                     5,
+                    id
+            );
+
+
+            return ps.executeUpdate() == 1;
+        }
+    }
+
+
+    // =========================================================
+    // DELETE TREATMENT
+    // =========================================================
+    public boolean delete(int id)
+            throws Exception {
+
+        String sql =
+                "DELETE FROM treatments WHERE id = ?";
+
+        try (
+                Connection c = DB.get();
+
+                PreparedStatement ps =
+                        c.prepareStatement(sql)
+        ) {
+
+            ps.setInt(
+                    1,
                     id
             );
 
@@ -164,44 +288,48 @@ public class TreatmentDAO {
         }
     }
 
-    public boolean delete(int id)
+
+    // =========================================================
+    // DATABASE RESULT -> DTO
+    // =========================================================
+    private TreatmentDTO map(
+            ResultSet rs)
             throws Exception {
 
-        try (
-                Connection c = DB.get();
-                PreparedStatement ps =
-                        c.prepareStatement(
-                                "DELETE FROM treatments WHERE id=?"
-                        )
-        ) {
-
-            ps.setInt(1, id);
-
-            return ps.executeUpdate() == 1;
-        }
-    }
-
-    private TreatmentDTO map(ResultSet rs)
-            throws Exception {
-
-        TreatmentDTO d =
+        TreatmentDTO treatment =
                 new TreatmentDTO();
 
-        d.id =
-                rs.getInt("id");
 
-        d.treatmentCode =
-                rs.getString("treatment_code");
+        treatment.id =
+                rs.getInt(
+                        "id"
+                );
 
-        d.treatmentName =
-                rs.getString("treatment_name");
 
-        d.description =
-                rs.getString("description");
+        treatment.treatmentCode =
+                rs.getString(
+                        "treatment_code"
+                );
 
-        d.price =
-                rs.getDouble("price");
 
-        return d;
+        treatment.treatmentName =
+                rs.getString(
+                        "treatment_name"
+                );
+
+
+        treatment.description =
+                rs.getString(
+                        "description"
+                );
+
+
+        treatment.price =
+                rs.getDouble(
+                        "price"
+                );
+
+
+        return treatment;
     }
 }

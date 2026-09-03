@@ -10,8 +10,10 @@ import java.util.List;
 
 public class BillDAO {
 
-    public BillDTO createBill(
-            BillDTO bill)
+    // =========================================================
+    // CREATE BILL
+    // =========================================================
+    public BillDTO createBill(BillDTO bill)
             throws Exception {
 
         try (Connection c = DB.get()) {
@@ -20,15 +22,15 @@ public class BillDAO {
 
             try {
 
-                // Get predetermined treatment price
+                // ---------------------------------------------
+                // GET TREATMENT PRICE
+                // ---------------------------------------------
                 String treatmentSql =
                         "SELECT price FROM treatments WHERE id=?";
 
                 try (
                         PreparedStatement ps =
-                                c.prepareStatement(
-                                        treatmentSql
-                                )
+                                c.prepareStatement(treatmentSql)
                 ) {
 
                     ps.setInt(
@@ -36,8 +38,10 @@ public class BillDAO {
                             bill.treatmentId
                     );
 
-                    try (ResultSet rs =
-                                 ps.executeQuery()) {
+                    try (
+                            ResultSet rs =
+                                    ps.executeQuery()
+                    ) {
 
                         if (!rs.next()) {
 
@@ -52,23 +56,35 @@ public class BillDAO {
                     }
                 }
 
+
+                // ---------------------------------------------
+                // CALCULATE TOTAL
+                // ---------------------------------------------
                 bill.totalAmount =
                         bill.consultationFee
                                 + bill.treatmentFee;
 
+
+                // ---------------------------------------------
+                // BILL NUMBER
+                // ---------------------------------------------
                 bill.billNumber =
-                        generateBillNumber();
+                        "BILL-"
+                                + System.currentTimeMillis();
+
 
                 bill.billDate =
                         LocalDate.now().toString();
 
-                if (bill.paymentStatus == null
-                        || bill.paymentStatus.isBlank()) {
 
-                    bill.paymentStatus =
-                            "Pending";
-                }
+                // New bill starts as Pending
+                bill.paymentStatus =
+                        "Pending";
 
+
+                // ---------------------------------------------
+                // INSERT BILL
+                // ---------------------------------------------
                 String sql = """
                         INSERT INTO bills
                         (
@@ -84,6 +100,7 @@ public class BillDAO {
                         )
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """;
+
 
                 try (
                         PreparedStatement ps =
@@ -138,21 +155,28 @@ public class BillDAO {
                             bill.paymentStatus
                     );
 
+
                     ps.executeUpdate();
 
-                    try (ResultSet rs =
-                                 ps.getGeneratedKeys()) {
+
+                    try (
+                            ResultSet rs =
+                                    ps.getGeneratedKeys()
+                    ) {
 
                         if (rs.next()) {
+
                             bill.id =
                                     rs.getInt(1);
                         }
                     }
                 }
 
+
                 c.commit();
 
                 return bill;
+
 
             } catch (Exception e) {
 
@@ -167,89 +191,174 @@ public class BillDAO {
         }
     }
 
+
+    // =========================================================
+    // GET ALL BILLS
+    // =========================================================
     public List<BillDTO> findAll()
             throws Exception {
 
-        String sql = """
-                SELECT *
-                FROM bills
-                ORDER BY id DESC
-                """;
+        String sql =
+                "SELECT * FROM bills ORDER BY id DESC";
+
+
+        List<BillDTO> bills =
+                new ArrayList<>();
+
 
         try (
                 Connection c = DB.get();
+
                 PreparedStatement ps =
                         c.prepareStatement(sql);
+
                 ResultSet rs =
                         ps.executeQuery()
         ) {
 
-            List<BillDTO> bills =
-                    new ArrayList<>();
-
             while (rs.next()) {
 
-                BillDTO d =
-                        new BillDTO();
-
-                d.id =
-                        rs.getInt("id");
-
-                d.billNumber =
-                        rs.getString(
-                                "bill_number"
-                        );
-
-                d.patientId =
-                        rs.getInt(
-                                "patient_id"
-                        );
-
-                d.appointmentId =
-                        rs.getInt(
-                                "appointment_id"
-                        );
-
-                d.treatmentId =
-                        rs.getInt(
-                                "treatment_id"
-                        );
-
-                d.consultationFee =
-                        rs.getDouble(
-                                "consultation_fee"
-                        );
-
-                d.treatmentFee =
-                        rs.getDouble(
-                                "treatment_fee"
-                        );
-
-                d.totalAmount =
-                        rs.getDouble(
-                                "total_amount"
-                        );
-
-                d.billDate =
-                        rs.getString(
-                                "bill_date"
-                        );
-
-                d.paymentStatus =
-                        rs.getString(
-                                "payment_status"
-                        );
-
-                bills.add(d);
+                bills.add(
+                        map(rs)
+                );
             }
+        }
 
-            return bills;
+
+        return bills;
+    }
+
+
+    // =========================================================
+    // GET BILL BY ID
+    // =========================================================
+    public BillDTO findById(int id)
+            throws Exception {
+
+        String sql =
+                "SELECT * FROM bills WHERE id=?";
+
+
+        try (
+                Connection c = DB.get();
+
+                PreparedStatement ps =
+                        c.prepareStatement(sql)
+        ) {
+
+            ps.setInt(
+                    1,
+                    id
+            );
+
+
+            try (
+                    ResultSet rs =
+                            ps.executeQuery()
+            ) {
+
+                if (rs.next()) {
+
+                    return map(rs);
+                }
+            }
+        }
+
+
+        return null;
+    }
+
+
+    // =========================================================
+    // PAY BILL
+    // =========================================================
+    public boolean markAsPaid(int id)
+            throws Exception {
+
+        String sql = """
+                UPDATE bills
+                SET payment_status='Paid'
+                WHERE id=?
+                """;
+
+
+        try (
+                Connection c = DB.get();
+
+                PreparedStatement ps =
+                        c.prepareStatement(sql)
+        ) {
+
+            ps.setInt(
+                    1,
+                    id
+            );
+
+
+            return ps.executeUpdate() == 1;
         }
     }
 
-    private String generateBillNumber() {
 
-        return "BILL-" +
-                System.currentTimeMillis();
+    // =========================================================
+    // MAP DATABASE RESULT
+    // =========================================================
+    private BillDTO map(ResultSet rs)
+            throws Exception {
+
+        BillDTO bill =
+                new BillDTO();
+
+
+        bill.id =
+                rs.getInt("id");
+
+        bill.billNumber =
+                rs.getString(
+                        "bill_number"
+                );
+
+        bill.patientId =
+                rs.getInt(
+                        "patient_id"
+                );
+
+        bill.appointmentId =
+                rs.getInt(
+                        "appointment_id"
+                );
+
+        bill.treatmentId =
+                rs.getInt(
+                        "treatment_id"
+                );
+
+        bill.consultationFee =
+                rs.getDouble(
+                        "consultation_fee"
+                );
+
+        bill.treatmentFee =
+                rs.getDouble(
+                        "treatment_fee"
+                );
+
+        bill.totalAmount =
+                rs.getDouble(
+                        "total_amount"
+                );
+
+        bill.billDate =
+                rs.getString(
+                        "bill_date"
+                );
+
+        bill.paymentStatus =
+                rs.getString(
+                        "payment_status"
+                );
+
+
+        return bill;
     }
 }

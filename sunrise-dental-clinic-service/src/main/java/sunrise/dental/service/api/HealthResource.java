@@ -12,8 +12,6 @@ public class HealthResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public Response ping() {
-        return Response.ok(
-                "Sunrise Dental Clinic REST Service is running"
-        ).build();
+        return Response.ok("OK").build();
     }
 }

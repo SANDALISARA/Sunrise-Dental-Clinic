@@ -3,12 +3,17 @@ package sunrise.dental.service.dao;
 import sunrise.dental.service.dto.AppointmentDTO;
 import sunrise.dental.service.util.DB;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class AppointmentDAO {
 
+    // GET ALL APPOINTMENTS
     public List<AppointmentDTO> findAll()
             throws Exception {
 
@@ -19,6 +24,9 @@ public class AppointmentDAO {
                          appointment_time DESC
                 """;
 
+        List<AppointmentDTO> appointments =
+                new ArrayList<>();
+
         try (
                 Connection c = DB.get();
                 PreparedStatement ps =
@@ -27,22 +35,21 @@ public class AppointmentDAO {
                         ps.executeQuery()
         ) {
 
-            List<AppointmentDTO> list =
-                    new ArrayList<>();
-
             while (rs.next()) {
-                list.add(map(rs));
+                appointments.add(map(rs));
             }
-
-            return list;
         }
+
+        return appointments;
     }
 
+
+    // GET ONE APPOINTMENT
     public AppointmentDTO findById(int id)
             throws Exception {
 
         String sql =
-                "SELECT * FROM appointments WHERE id=?";
+                "SELECT * FROM appointments WHERE id = ?";
 
         try (
                 Connection c = DB.get();
@@ -58,14 +65,16 @@ public class AppointmentDAO {
                 if (rs.next()) {
                     return map(rs);
                 }
-
-                return null;
             }
         }
+
+        return null;
     }
 
+
+    // CREATE APPOINTMENT
     public AppointmentDTO create(
-            AppointmentDTO d)
+            AppointmentDTO appointment)
             throws Exception {
 
         String sql = """
@@ -91,82 +100,109 @@ public class AppointmentDAO {
                         )
         ) {
 
-            if (d.appointmentNumber == null
-                    || d.appointmentNumber.isBlank()) {
+            if (appointment.appointmentNumber == null
+                    || appointment.appointmentNumber.isBlank()) {
 
-                d.appointmentNumber =
-                        generateAppointmentNumber();
+                appointment.appointmentNumber =
+                        "APT-" + System.currentTimeMillis();
+            }
+
+            if (appointment.status == null
+                    || appointment.status.isBlank()) {
+
+                appointment.status = "Scheduled";
             }
 
             ps.setString(
                     1,
-                    d.appointmentNumber
+                    appointment.appointmentNumber
             );
 
             ps.setInt(
                     2,
-                    d.patientId
+                    appointment.patientId
             );
 
             ps.setInt(
                     3,
-                    d.dentistId
+                    appointment.dentistId
             );
 
             ps.setString(
                     4,
-                    d.appointmentDate
+                    appointment.appointmentDate
             );
 
             ps.setString(
                     5,
-                    d.appointmentTime
+                    appointment.appointmentTime
             );
 
             ps.setString(
                     6,
-                    d.reason
+                    appointment.reason
             );
-
-            if (d.status == null
-                    || d.status.isBlank()) {
-
-                d.status = "Scheduled";
-            }
 
             ps.setString(
                     7,
-                    d.status
+                    appointment.status
             );
 
-            ps.executeUpdate();
+            int rows =
+                    ps.executeUpdate();
 
-            try (ResultSet rs =
-                         ps.getGeneratedKeys()) {
+            System.out.println(
+                    "Appointment rows inserted: "
+                            + rows
+            );
+
+            try (
+                    ResultSet rs =
+                            ps.getGeneratedKeys()
+            ) {
 
                 if (rs.next()) {
-                    d.id = rs.getInt(1);
+
+                    appointment.id =
+                            rs.getInt(1);
                 }
             }
 
-            return d;
+            System.out.println(
+                    "Appointment created successfully"
+            );
+
+            System.out.println(
+                    "Appointment ID: "
+                            + appointment.id
+            );
+
+            System.out.println(
+                    "Appointment Number: "
+                            + appointment.appointmentNumber
+            );
+
+            return appointment;
         }
     }
 
+
+    // UPDATE APPOINTMENT
     public boolean update(
             int id,
-            AppointmentDTO d)
+            AppointmentDTO appointment)
             throws Exception {
 
         String sql = """
                 UPDATE appointments
-                SET patient_id=?,
-                    dentist_id=?,
-                    appointment_date=?,
-                    appointment_time=?,
-                    reason=?,
-                    status=?
-                WHERE id=?
+                SET
+                    patient_id = ?,
+                    dentist_id = ?,
+                    appointment_date = ?,
+                    appointment_time = ?,
+                    reason = ?,
+                    status = ?
+                WHERE id = ?
                 """;
 
         try (
@@ -177,32 +213,32 @@ public class AppointmentDAO {
 
             ps.setInt(
                     1,
-                    d.patientId
+                    appointment.patientId
             );
 
             ps.setInt(
                     2,
-                    d.dentistId
+                    appointment.dentistId
             );
 
             ps.setString(
                     3,
-                    d.appointmentDate
+                    appointment.appointmentDate
             );
 
             ps.setString(
                     4,
-                    d.appointmentTime
+                    appointment.appointmentTime
             );
 
             ps.setString(
                     5,
-                    d.reason
+                    appointment.reason
             );
 
             ps.setString(
                     6,
-                    d.status
+                    appointment.status
             );
 
             ps.setInt(
@@ -214,13 +250,15 @@ public class AppointmentDAO {
         }
     }
 
+
+    // CANCEL APPOINTMENT
     public boolean cancel(int id)
             throws Exception {
 
         String sql = """
                 UPDATE appointments
-                SET status='Cancelled'
-                WHERE id=?
+                SET status = 'Cancelled'
+                WHERE id = ?
                 """;
 
         try (
@@ -235,15 +273,18 @@ public class AppointmentDAO {
         }
     }
 
+
+    // DELETE APPOINTMENT
     public boolean delete(int id)
             throws Exception {
+
+        String sql =
+                "DELETE FROM appointments WHERE id = ?";
 
         try (
                 Connection c = DB.get();
                 PreparedStatement ps =
-                        c.prepareStatement(
-                                "DELETE FROM appointments WHERE id=?"
-                        )
+                        c.prepareStatement(sql)
         ) {
 
             ps.setInt(1, id);
@@ -252,49 +293,51 @@ public class AppointmentDAO {
         }
     }
 
-    private String generateAppointmentNumber() {
 
-        return "APT-" +
-                System.currentTimeMillis();
-    }
-
-    private AppointmentDTO map(
-            ResultSet rs)
+    private AppointmentDTO map(ResultSet rs)
             throws Exception {
 
-        AppointmentDTO d =
+        AppointmentDTO a =
                 new AppointmentDTO();
 
-        d.id =
+        a.id =
                 rs.getInt("id");
 
-        d.appointmentNumber =
+        a.appointmentNumber =
                 rs.getString(
                         "appointment_number"
                 );
 
-        d.patientId =
-                rs.getInt("patient_id");
+        a.patientId =
+                rs.getInt(
+                        "patient_id"
+                );
 
-        d.dentistId =
-                rs.getInt("dentist_id");
+        a.dentistId =
+                rs.getInt(
+                        "dentist_id"
+                );
 
-        d.appointmentDate =
+        a.appointmentDate =
                 rs.getString(
                         "appointment_date"
                 );
 
-        d.appointmentTime =
+        a.appointmentTime =
                 rs.getString(
                         "appointment_time"
                 );
 
-        d.reason =
-                rs.getString("reason");
+        a.reason =
+                rs.getString(
+                        "reason"
+                );
 
-        d.status =
-                rs.getString("status");
+        a.status =
+                rs.getString(
+                        "status"
+                );
 
-        return d;
+        return a;
     }
 }
