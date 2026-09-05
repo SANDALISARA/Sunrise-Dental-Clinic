@@ -5,32 +5,54 @@
 <%@ page import="com.google.gson.JsonObject" %>
 <%@ page import="com.google.gson.JsonParser" %>
 
+
 <%
     if (session.getAttribute("user") == null) {
+
         response.sendRedirect("index.jsp");
         return;
     }
 
+
     String patientsJson =
-            (String) request.getAttribute("patientsJson");
+            (String) request.getAttribute(
+                    "patientsJson"
+            );
+
 
     String appointmentsJson =
-            (String) request.getAttribute("appointmentsJson");
+            (String) request.getAttribute(
+                    "appointmentsJson"
+            );
+
 
     String treatmentsJson =
-            (String) request.getAttribute("treatmentsJson");
+            (String) request.getAttribute(
+                    "treatmentsJson"
+            );
+
 
     String billResult =
-            (String) request.getAttribute("billResult");
+            (String) request.getAttribute(
+                    "billResult"
+            );
+
 
     String error =
-            (String) request.getAttribute("error");
+            (String) request.getAttribute(
+                    "error"
+            );
+
 
     String success =
-            (String) request.getAttribute("success");
+            (String) request.getAttribute(
+                    "success"
+            );
 %>
 
+
 <!DOCTYPE html>
+
 <html>
 
 <head>
@@ -44,192 +66,442 @@
         Billing - Sunrise Dental Clinic
     </title>
 
+
     <style>
 
         * {
             box-sizing: border-box;
         }
 
+
         body {
+
             margin: 0;
-            font-family: "Segoe UI", Arial, sans-serif;
-            background-color: #f5f8fa;
-            color: #263238;
+
+            font-family:
+                    "Segoe UI",
+                    Arial,
+                    sans-serif;
+
+            background:
+                    #f4f8fb;
+
+            color:
+                    #263238;
         }
+
 
         .container {
-            width: 92%;
-            max-width: 1100px;
-            margin: 30px auto;
+
+            width:
+                    92%;
+
+            max-width:
+                    1150px;
+
+            margin:
+                    35px auto;
         }
+
 
         h1 {
-            color: #064f8c;
+
+            color:
+                    #07558e;
+
+            margin-bottom:
+                    25px;
         }
+
 
         h2 {
-            margin-top: 0;
+
+            margin-top:
+                    0;
         }
+
 
         .nav {
-            margin-bottom: 25px;
+
+            margin-bottom:
+                    28px;
         }
+
 
         .nav a {
-            color: #087ca7;
-            text-decoration: none;
-            font-weight: 600;
-            margin-right: 14px;
+
+            color:
+                    #087ca7;
+
+            text-decoration:
+                    none;
+
+            margin-right:
+                    20px;
+
+            font-weight:
+                    600;
         }
+
 
         .card {
-            background: white;
-            padding: 25px;
-            margin-bottom: 25px;
-            border-radius: 12px;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.07);
+
+            background:
+                    white;
+
+            padding:
+                    28px;
+
+            border-radius:
+                    13px;
+
+            margin-bottom:
+                    25px;
+
+            box-shadow:
+                    0 4px 16px
+                    rgba(0,0,0,0.07);
         }
+
 
         .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+
+            display:
+                    grid;
+
+            grid-template-columns:
+                    repeat(2, 1fr);
+
+            gap:
+                    22px;
         }
+
 
         .form-group {
-            display: flex;
-            flex-direction: column;
+
+            display:
+                    flex;
+
+            flex-direction:
+                    column;
         }
+
 
         label {
-            font-weight: 600;
-            margin-bottom: 6px;
+
+            margin-bottom:
+                    8px;
+
+            font-weight:
+                    600;
         }
 
-        select,
-        input {
-            height: 46px;
-            padding: 0 12px;
-            border: 1px solid #ccd7dd;
-            border-radius: 7px;
-            font-size: 14px;
+
+        input,
+        select {
+
+            width:
+                    100%;
+
+            padding:
+                    13px;
+
+            border:
+                    1px solid #ccd8df;
+
+            border-radius:
+                    7px;
+
+            font-size:
+                    15px;
+
+            background:
+                    white;
         }
 
-        select:focus,
-        input:focus {
-            outline: none;
-            border-color: #13a2b3;
-            box-shadow: 0 0 0 3px rgba(19,162,179,0.12);
+
+        input:focus,
+        select:focus {
+
+            outline:
+                    none;
+
+            border-color:
+                    #0d95ad;
+
+            box-shadow:
+                    0 0 0 3px
+                    rgba(13,149,173,0.12);
         }
+
 
         button {
-            margin-top: 20px;
-            background: linear-gradient(
-                    90deg,
-                    #064f8c,
-                    #0d95ad
-            );
-            color: white;
-            border: none;
-            padding: 12px 22px;
-            border-radius: 7px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
+
+            border:
+                    none;
+
+            border-radius:
+                    7px;
+
+            padding:
+                    12px 20px;
+
+            cursor:
+                    pointer;
+
+            color:
+                    white;
+
+            font-weight:
+                    600;
+
+            font-size:
+                    14px;
+
+            background:
+                    linear-gradient(
+                            90deg,
+                            #07558e,
+                            #0d9aae
+                    );
         }
+
 
         button:hover {
-            opacity: 0.92;
+
+            opacity:
+                    0.92;
         }
+
+
+        .full-width {
+
+            grid-column:
+                    1 / -1;
+        }
+
 
         .error {
-            background: #fff1f1;
-            color: #b3261e;
-            border: 1px solid #f0c7c7;
-            padding: 12px;
-            border-radius: 7px;
-            margin-bottom: 20px;
+
+            padding:
+                    14px;
+
+            background:
+                    #fff0f0;
+
+            color:
+                    #b3261e;
+
+            border:
+                    1px solid #f2c2c2;
+
+            border-radius:
+                    7px;
+
+            margin-bottom:
+                    20px;
         }
+
 
         .success {
-            background: #ecfff3;
-            color: #16723c;
-            border: 1px solid #bfe8cc;
-            padding: 12px;
-            border-radius: 7px;
-            margin-bottom: 20px;
+
+            padding:
+                    14px;
+
+            background:
+                    #ecfff3;
+
+            color:
+                    #176b3a;
+
+            border:
+                    1px solid #bce6ca;
+
+            border-radius:
+                    7px;
+
+            margin-bottom:
+                    20px;
         }
 
-        .result-box {
-            background: #eefafb;
-            border-left: 4px solid #13a2b3;
-            padding: 18px;
-            border-radius: 7px;
+
+        .appointment-help {
+
+            margin-top:
+                    7px;
+
+            color:
+                    #68777e;
+
+            font-size:
+                    13px;
         }
 
-        .result-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
+
+        .bill-header {
+
+            border-bottom:
+                    2px solid #edf1f3;
+
+            padding-bottom:
+                    15px;
+
+            margin-bottom:
+                    20px;
         }
 
-        .result-table td {
-            padding: 10px;
-            border-bottom: 1px solid #dce7eb;
+
+        .bill-header h2 {
+
+            color:
+                    #07558e;
+
+            margin-bottom:
+                    5px;
         }
 
-        .result-table td:first-child {
-            font-weight: 600;
-            width: 35%;
+
+        .bill-number {
+
+            color:
+                    #087f9a;
+
+            font-weight:
+                    bold;
         }
 
-        .total {
-            font-size: 20px;
-            color: #064f8c;
-            font-weight: bold;
+
+        .bill-table {
+
+            width:
+                    100%;
+
+            border-collapse:
+                    collapse;
+
+            margin-top:
+                    15px;
         }
+
+
+        .bill-table td {
+
+            padding:
+                    12px;
+
+            border-bottom:
+                    1px solid #e1e8ec;
+        }
+
+
+        .bill-table td:first-child {
+
+            font-weight:
+                    600;
+
+            width:
+                    40%;
+
+            color:
+                    #47565d;
+        }
+
+
+        .total-row {
+
+            font-size:
+                    18px;
+
+            font-weight:
+                    bold;
+
+            color:
+                    #07558e;
+        }
+
+
+        .status {
+
+            display:
+                    inline-block;
+
+            padding:
+                    5px 12px;
+
+            border-radius:
+                    20px;
+
+            font-size:
+                    13px;
+
+            font-weight:
+                    bold;
+        }
+
+
+        .pending {
+
+            background:
+                    #fff3d5;
+
+            color:
+                    #8b6500;
+        }
+
+
+        .paid {
+
+            background:
+                    #ddf7e7;
+
+            color:
+                    #17703d;
+        }
+
 
         .bill-actions {
-            margin-top: 20px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
+
+            margin-top:
+                    22px;
+
+            display:
+                    flex;
+
+            gap:
+                    12px;
+
+            flex-wrap:
+                    wrap;
         }
 
-        .bill-actions form {
-            margin: 0;
-        }
 
         .pay-button {
-            background: linear-gradient(
-                    90deg,
-                    #138a50,
-                    #19a866
-            );
+
+            background:
+                    #16874d;
         }
+
 
         .print-button {
-            background: linear-gradient(
-                    90deg,
-                    #f0a000,
-                    #f5b420
-            );
+
+            background:
+                    #07558e;
         }
 
-        .status-paid {
-            color: #138a50;
-            font-weight: bold;
-        }
 
-        .status-pending {
-            color: #d58a00;
-            font-weight: bold;
-        }
-
-        @media(max-width: 700px) {
+        @media(max-width: 800px) {
 
             .form-grid {
-                grid-template-columns: 1fr;
+
+                grid-template-columns:
+                        1fr;
+            }
+
+
+            .full-width {
+
+                grid-column:
+                        auto;
             }
         }
 
@@ -237,13 +509,17 @@
 
 </head>
 
+
 <body>
 
+
 <div class="container">
+
 
     <h1>
         Dental Billing
     </h1>
+
 
     <div class="nav">
 
@@ -274,69 +550,83 @@
     </div>
 
 
-    <%
-        if (error != null) {
-    %>
 
-    <div class="error">
-        <%= error %>
-    </div>
+    <% if (error != null) { %>
 
-    <%
-        }
-    %>
+        <div class="error">
+
+            <%= error %>
+
+        </div>
+
+    <% } %>
 
 
-    <%
-        if (success != null) {
-    %>
 
-    <div class="success">
-        <%= success %>
-    </div>
+    <% if (success != null) { %>
 
-    <%
-        }
-    %>
+        <div class="success">
 
+            <%= success %>
+
+        </div>
+
+    <% } %>
+
+
+
+    <!-- ================================================= -->
+    <!-- CREATE BILL -->
+    <!-- ================================================= -->
 
     <div class="card">
+
 
         <h2>
             Create Patient Bill
         </h2>
 
+
         <form method="post"
               action="bill">
 
-            <!-- IMPORTANT -->
+
             <input type="hidden"
                    name="action"
                    value="create">
 
+
             <div class="form-grid">
 
 
+                <!-- ===================================== -->
                 <!-- PATIENT -->
+                <!-- ===================================== -->
 
                 <div class="form-group">
+
 
                     <label>
                         Patient
                     </label>
 
+
                     <select name="patientId"
+                            id="patientSelect"
+                            onchange="filterAppointments()"
                             required>
+
 
                         <option value="">
                             Select Patient
                         </option>
 
+
                         <%
                             try {
 
-                                if (patientsJson != null
-                                        && !patientsJson.isBlank()) {
+                                if (patientsJson != null) {
+
 
                                     JsonArray patients =
                                             JsonParser
@@ -345,41 +635,45 @@
                                                     )
                                                     .getAsJsonArray();
 
-                                    for (JsonElement element
+
+                                    for (
+                                            JsonElement element
                                             : patients) {
+
 
                                         JsonObject p =
                                                 element
                                                         .getAsJsonObject();
 
+
                                         int id =
                                                 p.get("id")
                                                         .getAsInt();
 
-                                        String patientNumber =
+
+                                        String number =
                                                 p.has("patientNumber")
-                                                && !p.get("patientNumber")
-                                                     .isJsonNull()
                                                 ? p.get("patientNumber")
                                                    .getAsString()
                                                 : "";
 
-                                        String patientName =
+
+                                        String name =
                                                 p.has("patientName")
-                                                && !p.get("patientName")
-                                                     .isJsonNull()
                                                 ? p.get("patientName")
                                                    .getAsString()
                                                 : "";
                         %>
 
+
                         <option value="<%= id %>">
 
-                            <%= patientNumber %>
+                            <%= number %>
                             -
-                            <%= patientName %>
+                            <%= name %>
 
                         </option>
+
 
                         <%
                                     }
@@ -394,32 +688,42 @@
                             }
                         %>
 
+
                     </select>
+
 
                 </div>
 
 
 
+                <!-- ===================================== -->
                 <!-- APPOINTMENT -->
+                <!-- ===================================== -->
 
                 <div class="form-group">
 
+
                     <label>
-                        Appointment
+                        Scheduled Appointment
                     </label>
 
+
                     <select name="appointmentId"
-                            required>
+                            id="appointmentSelect"
+                            required
+                            disabled>
+
 
                         <option value="">
-                            Select Appointment
+                            Select Patient First
                         </option>
+
 
                         <%
                             try {
 
-                                if (appointmentsJson != null
-                                        && !appointmentsJson.isBlank()) {
+                                if (appointmentsJson != null) {
+
 
                                     JsonArray appointments =
                                             JsonParser
@@ -428,50 +732,107 @@
                                                     )
                                                     .getAsJsonArray();
 
-                                    for (JsonElement element
+
+                                    for (
+                                            JsonElement element
                                             : appointments) {
+
 
                                         JsonObject a =
                                                 element
                                                         .getAsJsonObject();
 
+
+                                        String status =
+                                                a.has("status")
+                                                ? a.get("status")
+                                                   .getAsString()
+                                                : "";
+
+
+                                        // ONLY SCHEDULED
+                                        if (!"Scheduled"
+                                                .equalsIgnoreCase(
+                                                        status
+                                                )) {
+
+                                            continue;
+                                        }
+
+
                                         int id =
                                                 a.get("id")
                                                         .getAsInt();
 
+
+                                        int patientId =
+                                                a.get("patientId")
+                                                        .getAsInt();
+
+
                                         String number =
-                                                a.has("appointmentNumber")
-                                                && !a.get("appointmentNumber")
-                                                     .isJsonNull()
-                                                ? a.get("appointmentNumber")
-                                                   .getAsString()
+                                                a.has(
+                                                        "appointmentNumber"
+                                                )
+                                                ? a.get(
+                                                        "appointmentNumber"
+                                                  ).getAsString()
                                                 : "";
+
 
                                         String date =
-                                                a.has("appointmentDate")
-                                                && !a.get("appointmentDate")
-                                                     .isJsonNull()
-                                                ? a.get("appointmentDate")
-                                                   .getAsString()
+                                                a.has(
+                                                        "appointmentDate"
+                                                )
+                                                ? a.get(
+                                                        "appointmentDate"
+                                                  ).getAsString()
                                                 : "";
+
 
                                         String time =
-                                                a.has("appointmentTime")
-                                                && !a.get("appointmentTime")
+                                                a.has(
+                                                        "appointmentTime"
+                                                )
+                                                ? a.get(
+                                                        "appointmentTime"
+                                                  ).getAsString()
+                                                : "";
+
+
+                                        String dentist =
+                                                a.has("dentistName")
+                                                && !a.get("dentistName")
                                                      .isJsonNull()
-                                                ? a.get("appointmentTime")
+                                                ? a.get("dentistName")
                                                    .getAsString()
                                                 : "";
+
+
+                                        if (time.length() >= 5) {
+
+                                            time =
+                                                    time.substring(
+                                                            0,
+                                                            5
+                                                    );
+                                        }
                         %>
 
-                        <option value="<%= id %>">
+
+                        <option value="<%= id %>"
+                                data-patient="<%= patientId %>"
+                                style="display:none;">
 
                             <%= number %>
-                            -
+                            |
                             <%= date %>
                             <%= time %>
+                            |
+                            <%= dentist %>
 
                         </option>
+
 
                         <%
                                     }
@@ -486,32 +847,50 @@
                             }
                         %>
 
+
                     </select>
+
+
+                    <span class="appointment-help"
+                          id="appointmentHelp">
+
+                        Select a patient to view their
+                        scheduled appointments.
+
+                    </span>
+
 
                 </div>
 
 
 
+                <!-- ===================================== -->
                 <!-- TREATMENT -->
+                <!-- ===================================== -->
 
                 <div class="form-group">
+
 
                     <label>
                         Treatment
                     </label>
 
+
                     <select name="treatmentId"
+                            id="treatmentSelect"
                             required>
+
 
                         <option value="">
                             Select Treatment
                         </option>
 
+
                         <%
                             try {
 
-                                if (treatmentsJson != null
-                                        && !treatmentsJson.isBlank()) {
+                                if (treatmentsJson != null) {
+
 
                                     JsonArray treatments =
                                             JsonParser
@@ -520,32 +899,35 @@
                                                     )
                                                     .getAsJsonArray();
 
-                                    for (JsonElement element
+
+                                    for (
+                                            JsonElement element
                                             : treatments) {
+
 
                                         JsonObject t =
                                                 element
                                                         .getAsJsonObject();
 
+
                                         int id =
                                                 t.get("id")
                                                         .getAsInt();
 
+
                                         String code =
                                                 t.has("treatmentCode")
-                                                && !t.get("treatmentCode")
-                                                     .isJsonNull()
                                                 ? t.get("treatmentCode")
                                                    .getAsString()
                                                 : "";
 
+
                                         String name =
                                                 t.has("treatmentName")
-                                                && !t.get("treatmentName")
-                                                     .isJsonNull()
                                                 ? t.get("treatmentName")
                                                    .getAsString()
                                                 : "";
+
 
                                         double price =
                                                 t.has("price")
@@ -554,15 +936,18 @@
                                                 : 0;
                         %>
 
+
                         <option value="<%= id %>">
 
                             <%= code %>
                             -
                             <%= name %>
                             -
-                            Rs. <%= String.format("%.2f", price) %>
+                            LKR
+                            <%= String.format("%.2f", price) %>
 
                         </option>
+
 
                         <%
                                     }
@@ -577,19 +962,25 @@
                             }
                         %>
 
+
                     </select>
+
 
                 </div>
 
 
 
+                <!-- ===================================== -->
                 <!-- CONSULTATION FEE -->
+                <!-- ===================================== -->
 
                 <div class="form-group">
+
 
                     <label>
                         Consultation Fee (LKR)
                     </label>
+
 
                     <input type="number"
                            name="consultationFee"
@@ -598,31 +989,45 @@
                            placeholder="e.g. 2500.00"
                            required>
 
+
+                </div>
+
+
+
+                <div class="full-width">
+
+
+                    <button type="submit">
+
+                        Calculate & Save Bill
+
+                    </button>
+
+
                 </div>
 
 
             </div>
 
 
-            <button type="submit">
-
-                Calculate & Save Bill
-
-            </button>
-
         </form>
+
 
     </div>
 
 
 
+    <!-- ================================================= -->
     <!-- BILL RESULT -->
+    <!-- ================================================= -->
 
     <%
         if (billResult != null
                 && !billResult.isBlank()) {
 
+
             try {
+
 
                 JsonObject bill =
                         JsonParser
@@ -632,215 +1037,463 @@
                                 .getAsJsonObject();
 
 
-                int currentBillId =
+                int billId =
                         bill.has("id")
-                        ? bill.get("id").getAsInt()
+                        ? bill.get("id")
+                              .getAsInt()
                         : 0;
 
 
-                String currentStatus =
-                        bill.has("paymentStatus")
-                        ? bill.get("paymentStatus").getAsString()
+                String billNumber =
+                        bill.has("billNumber")
+                        ? bill.get("billNumber")
+                              .getAsString()
                         : "";
+
+
+                int patientId =
+                        bill.has("patientId")
+                        ? bill.get("patientId")
+                              .getAsInt()
+                        : 0;
+
+
+                int appointmentId =
+                        bill.has("appointmentId")
+                        ? bill.get("appointmentId")
+                              .getAsInt()
+                        : 0;
+
+
+                int treatmentId =
+                        bill.has("treatmentId")
+                        ? bill.get("treatmentId")
+                              .getAsInt()
+                        : 0;
+
+
+                double treatmentFee =
+                        bill.has("treatmentFee")
+                        ? bill.get("treatmentFee")
+                              .getAsDouble()
+                        : 0;
+
+
+                double consultationFee =
+                        bill.has("consultationFee")
+                        ? bill.get("consultationFee")
+                              .getAsDouble()
+                        : 0;
+
+
+                double totalAmount =
+                        bill.has("totalAmount")
+                        ? bill.get("totalAmount")
+                              .getAsDouble()
+                        : 0;
+
+
+                String paymentStatus =
+                        bill.has("paymentStatus")
+                        ? bill.get("paymentStatus")
+                              .getAsString()
+                        : "Pending";
+
+
+                // -----------------------------------------
+                // LOOK UP DISPLAY VALUES
+                // -----------------------------------------
+
+                String patientName = "";
+                String patientNumber = "";
+
+                String appointmentNumber = "";
+                String appointmentDate = "";
+                String appointmentTime = "";
+                String dentistName = "";
+
+                String treatmentName = "";
+                String treatmentCode = "";
+
+
+                // PATIENT
+                if (patientsJson != null) {
+
+                    JsonArray patients =
+                            JsonParser
+                                    .parseString(
+                                            patientsJson
+                                    )
+                                    .getAsJsonArray();
+
+
+                    for (
+                            JsonElement element
+                            : patients) {
+
+
+                        JsonObject p =
+                                element
+                                        .getAsJsonObject();
+
+
+                        if (p.get("id").getAsInt()
+                                == patientId) {
+
+
+                            patientName =
+                                    p.has("patientName")
+                                    ? p.get("patientName")
+                                       .getAsString()
+                                    : "";
+
+
+                            patientNumber =
+                                    p.has("patientNumber")
+                                    ? p.get("patientNumber")
+                                       .getAsString()
+                                    : "";
+
+
+                            break;
+                        }
+                    }
+                }
+
+
+                // APPOINTMENT
+                if (appointmentsJson != null) {
+
+                    JsonArray appointments =
+                            JsonParser
+                                    .parseString(
+                                            appointmentsJson
+                                    )
+                                    .getAsJsonArray();
+
+
+                    for (
+                            JsonElement element
+                            : appointments) {
+
+
+                        JsonObject a =
+                                element
+                                        .getAsJsonObject();
+
+
+                        if (a.get("id").getAsInt()
+                                == appointmentId) {
+
+
+                            appointmentNumber =
+                                    a.has("appointmentNumber")
+                                    ? a.get("appointmentNumber")
+                                       .getAsString()
+                                    : "";
+
+
+                            appointmentDate =
+                                    a.has("appointmentDate")
+                                    ? a.get("appointmentDate")
+                                       .getAsString()
+                                    : "";
+
+
+                            appointmentTime =
+                                    a.has("appointmentTime")
+                                    ? a.get("appointmentTime")
+                                       .getAsString()
+                                    : "";
+
+
+                            dentistName =
+                                    a.has("dentistName")
+                                    && !a.get("dentistName")
+                                         .isJsonNull()
+                                    ? a.get("dentistName")
+                                       .getAsString()
+                                    : "";
+
+
+                            if (appointmentTime.length()
+                                    >= 5) {
+
+                                appointmentTime =
+                                        appointmentTime
+                                                .substring(
+                                                        0,
+                                                        5
+                                                );
+                            }
+
+
+                            break;
+                        }
+                    }
+                }
+
+
+                // TREATMENT
+                if (treatmentsJson != null) {
+
+                    JsonArray treatments =
+                            JsonParser
+                                    .parseString(
+                                            treatmentsJson
+                                    )
+                                    .getAsJsonArray();
+
+
+                    for (
+                            JsonElement element
+                            : treatments) {
+
+
+                        JsonObject t =
+                                element
+                                        .getAsJsonObject();
+
+
+                        if (t.get("id").getAsInt()
+                                == treatmentId) {
+
+
+                            treatmentName =
+                                    t.has("treatmentName")
+                                    ? t.get("treatmentName")
+                                       .getAsString()
+                                    : "";
+
+
+                            treatmentCode =
+                                    t.has("treatmentCode")
+                                    ? t.get("treatmentCode")
+                                       .getAsString()
+                                    : "";
+
+
+                            break;
+                        }
+                    }
+                }
     %>
 
 
-    <div class="card">
-
-        <h2>
-            Bill Result
-        </h2>
+    <div class="card"
+         id="billResultCard">
 
 
-        <div class="result-box"
-             id="printableBill">
-
-            <table class="result-table">
+        <div class="bill-header">
 
 
-                <tr>
-
-                    <td>
-                        Bill Number
-                    </td>
-
-                    <td>
-                        <%= bill.has("billNumber")
-                            ? bill.get("billNumber").getAsString()
-                            : "" %>
-                    </td>
-
-                </tr>
+            <h2>
+                Patient Bill
+            </h2>
 
 
-                <tr>
+            <span class="bill-number">
 
-                    <td>
-                        Patient ID
-                    </td>
+                Bill No:
+                <%= billNumber %>
 
-                    <td>
-                        <%= bill.has("patientId")
-                            ? bill.get("patientId").getAsInt()
-                            : "" %>
-                    </td>
+            </span>
 
-                </tr>
-
-
-                <tr>
-
-                    <td>
-                        Appointment ID
-                    </td>
-
-                    <td>
-                        <%= bill.has("appointmentId")
-                            ? bill.get("appointmentId").getAsInt()
-                            : "" %>
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <td>
-                        Treatment ID
-                    </td>
-
-                    <td>
-                        <%= bill.has("treatmentId")
-                            ? bill.get("treatmentId").getAsInt()
-                            : "" %>
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <td>
-                        Consultation Fee
-                    </td>
-
-                    <td>
-
-                        Rs.
-                        <%= bill.has("consultationFee")
-                            ? String.format(
-                                    "%.2f",
-                                    bill.get("consultationFee")
-                                        .getAsDouble()
-                              )
-                            : "0.00" %>
-
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <td>
-                        Treatment Fee
-                    </td>
-
-                    <td>
-
-                        Rs.
-                        <%= bill.has("treatmentFee")
-                            ? String.format(
-                                    "%.2f",
-                                    bill.get("treatmentFee")
-                                        .getAsDouble()
-                              )
-                            : "0.00" %>
-
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <td>
-                        Total Amount
-                    </td>
-
-                    <td class="total">
-
-                        Rs.
-                        <%= bill.has("totalAmount")
-                            ? String.format(
-                                    "%.2f",
-                                    bill.get("totalAmount")
-                                        .getAsDouble()
-                              )
-                            : "0.00" %>
-
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <td>
-                        Payment Status
-                    </td>
-
-                    <td>
-
-                        <span class="
-                            <%= "Paid".equalsIgnoreCase(currentStatus)
-                                ? "status-paid"
-                                : "status-pending" %>
-                        ">
-
-                            <%= currentStatus %>
-
-                        </span>
-
-                    </td>
-
-                </tr>
-
-
-            </table>
 
         </div>
 
 
-        <!-- PAY / PRINT BUTTONS -->
+        <table class="bill-table">
+
+
+            <tr>
+
+                <td>Patient</td>
+
+                <td>
+                    <%= patientNumber %>
+                    -
+                    <%= patientName %>
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>Appointment</td>
+
+                <td>
+                    <%= appointmentNumber %>
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>Appointment Date</td>
+
+                <td>
+                    <%= appointmentDate %>
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>Appointment Time</td>
+
+                <td>
+                    <%= appointmentTime %>
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>Dentist</td>
+
+                <td>
+                    <%= dentistName %>
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>Treatment</td>
+
+                <td>
+                    <%= treatmentCode %>
+                    -
+                    <%= treatmentName %>
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>Treatment Fee</td>
+
+                <td>
+                    LKR
+                    <%= String.format(
+                            "%.2f",
+                            treatmentFee
+                    ) %>
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>Consultation Fee</td>
+
+                <td>
+                    LKR
+                    <%= String.format(
+                            "%.2f",
+                            consultationFee
+                    ) %>
+                </td>
+
+            </tr>
+
+
+            <tr class="total-row">
+
+                <td>Total Amount</td>
+
+                <td>
+                    LKR
+                    <%= String.format(
+                            "%.2f",
+                            totalAmount
+                    ) %>
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>Payment Status</td>
+
+                <td>
+
+
+                    <span class="status
+                        <%= "Paid"
+                                .equalsIgnoreCase(
+                                        paymentStatus
+                                )
+                                ? "paid"
+                                : "pending" %>">
+
+
+                        <%= paymentStatus %>
+
+
+                    </span>
+
+
+                </td>
+
+            </tr>
+
+
+        </table>
+
+
 
         <div class="bill-actions">
 
 
             <%
-                if ("Pending".equalsIgnoreCase(
-                        currentStatus)) {
+                if ("Pending"
+                        .equalsIgnoreCase(
+                                paymentStatus
+                        )) {
             %>
 
 
             <form method="post"
                   action="bill">
 
+
                 <input type="hidden"
                        name="action"
                        value="pay">
 
+
                 <input type="hidden"
                        name="billId"
-                       value="<%= currentBillId %>">
+                       value="<%= billId %>">
+
+
+                <input type="hidden"
+                       name="appointmentId"
+                       value="<%= appointmentId %>">
 
 
                 <button type="submit"
-                        class="pay-button">
+                        class="pay-button"
+                        onclick="
+                            return confirm(
+                                'Confirm payment received?'
+                            );
+                        ">
 
                     Mark as Paid
 
                 </button>
+
 
             </form>
 
@@ -850,9 +1503,10 @@
             %>
 
 
+
             <button type="button"
                     class="print-button"
-                    onclick="printBill()">
+                    onclick="printReceipt()">
 
                 Print Receipt
 
@@ -865,11 +1519,59 @@
     </div>
 
 
+
+    <!-- ================================================= -->
+    <!-- RECEIPT DATA FOR JAVASCRIPT -->
+    <!-- ================================================= -->
+
+    <script>
+
+        const receiptData = {
+
+            billNumber:
+                "<%= billNumber.replace("\"", "\\\"") %>",
+
+            patient:
+                "<%= (patientNumber + " - " + patientName)
+                        .replace("\"", "\\\"") %>",
+
+            appointment:
+                "<%= appointmentNumber.replace("\"", "\\\"") %>",
+
+            appointmentDate:
+                "<%= appointmentDate.replace("\"", "\\\"") %>",
+
+            appointmentTime:
+                "<%= appointmentTime.replace("\"", "\\\"") %>",
+
+            dentist:
+                "<%= dentistName.replace("\"", "\\\"") %>",
+
+            treatment:
+                "<%= (treatmentCode + " - " + treatmentName)
+                        .replace("\"", "\\\"") %>",
+
+            treatmentFee:
+                "<%= String.format("%.2f", treatmentFee) %>",
+
+            consultationFee:
+                "<%= String.format("%.2f", consultationFee) %>",
+
+            total:
+                "<%= String.format("%.2f", totalAmount) %>",
+
+            status:
+                "<%= paymentStatus %>"
+        };
+
+    </script>
+
+
     <%
             } catch (Exception e) {
 
                 System.out.println(
-                        "Bill result JSON error: "
+                        "Bill result error: "
                                 + e.getMessage()
                 );
             }
@@ -880,38 +1582,321 @@
 </div>
 
 
+
 <script>
 
-function printBill() {
+// =============================================================
+// FILTER APPOINTMENTS BY PATIENT
+// =============================================================
 
-    const printable =
+function filterAppointments() {
+
+
+    const patientSelect =
             document.getElementById(
-                    "printableBill"
+                    "patientSelect"
             );
 
-    if (!printable) {
 
-        alert(
-            "No bill is available to print."
+    const appointmentSelect =
+            document.getElementById(
+                    "appointmentSelect"
+            );
+
+
+    const help =
+            document.getElementById(
+                    "appointmentHelp"
+            );
+
+
+    const patientId =
+            patientSelect.value;
+
+
+    appointmentSelect.innerHTML =
+            "";
+
+
+    if (!patientId) {
+
+
+        appointmentSelect.disabled =
+                true;
+
+
+        const option =
+                document.createElement(
+                        "option"
+                );
+
+
+        option.value = "";
+
+        option.textContent =
+                "Select Patient First";
+
+
+        appointmentSelect.appendChild(
+                option
         );
+
+
+        help.textContent =
+                "Select a patient to view "
+                + "their scheduled appointments.";
+
 
         return;
     }
 
 
-    const billContent =
-            printable.innerHTML;
+    // The original appointment information
+    // is stored in this JavaScript array.
+
+    const appointments = [
+
+        <%
+            try {
+
+                if (appointmentsJson != null) {
+
+
+                    JsonArray appointments =
+                            JsonParser
+                                    .parseString(
+                                            appointmentsJson
+                                    )
+                                    .getAsJsonArray();
+
+
+                    boolean first = true;
+
+
+                    for (
+                            JsonElement element
+                            : appointments) {
+
+
+                        JsonObject a =
+                                element
+                                        .getAsJsonObject();
+
+
+                        String status =
+                                a.has("status")
+                                ? a.get("status")
+                                   .getAsString()
+                                : "";
+
+
+                        if (!"Scheduled"
+                                .equalsIgnoreCase(
+                                        status
+                                )) {
+
+                            continue;
+                        }
+
+
+                        int id =
+                                a.get("id")
+                                        .getAsInt();
+
+
+                        int patientId =
+                                a.get("patientId")
+                                        .getAsInt();
+
+
+                        String number =
+                                a.has("appointmentNumber")
+                                ? a.get("appointmentNumber")
+                                   .getAsString()
+                                : "";
+
+
+                        String date =
+                                a.has("appointmentDate")
+                                ? a.get("appointmentDate")
+                                   .getAsString()
+                                : "";
+
+
+                        String time =
+                                a.has("appointmentTime")
+                                ? a.get("appointmentTime")
+                                   .getAsString()
+                                : "";
+
+
+                        String dentist =
+                                a.has("dentistName")
+                                && !a.get("dentistName")
+                                     .isJsonNull()
+                                ? a.get("dentistName")
+                                   .getAsString()
+                                : "";
+
+
+                        if (time.length() >= 5) {
+
+                            time =
+                                    time.substring(
+                                            0,
+                                            5
+                                    );
+                        }
+
+
+                        if (!first) {
+                            out.print(",");
+                        }
+
+
+                        first = false;
+        %>
+
+
+        {
+            id: "<%= id %>",
+            patientId: "<%= patientId %>",
+            text:
+                "<%= number %> | "
+                + "<%= date %> "
+                + "<%= time %> | "
+                + "<%= dentist.replace("\"", "\\\"") %>"
+        }
+
+
+        <%
+                    }
+                }
+
+            } catch (Exception e) {
+
+                System.out.println(
+                        "Appointment JS error: "
+                                + e.getMessage()
+                );
+            }
+        %>
+
+    ];
+
+
+    const placeholder =
+            document.createElement(
+                    "option"
+            );
+
+
+    placeholder.value = "";
+
+    placeholder.textContent =
+            "Select Appointment";
+
+
+    appointmentSelect.appendChild(
+            placeholder
+    );
+
+
+    let count = 0;
+
+
+    appointments.forEach(
+            function (appointment) {
+
+
+                if (appointment.patientId
+                        === patientId) {
+
+
+                    const option =
+                            document.createElement(
+                                    "option"
+                            );
+
+
+                    option.value =
+                            appointment.id;
+
+
+                    option.textContent =
+                            appointment.text;
+
+
+                    appointmentSelect.appendChild(
+                            option
+                    );
+
+
+                    count++;
+                }
+            }
+    );
+
+
+    appointmentSelect.disabled =
+            count === 0;
+
+
+    if (count === 0) {
+
+
+        placeholder.textContent =
+                "No Scheduled Appointments";
+
+
+        help.textContent =
+                "This patient has no appointment "
+                + "waiting for billing.";
+
+
+    } else {
+
+
+        help.textContent =
+                count
+                + " scheduled appointment(s) "
+                + "available for billing.";
+    }
+}
+
+
+
+// =============================================================
+// PRINT COMPLETE RECEIPT
+// =============================================================
+
+function printReceipt() {
+
+
+    if (typeof receiptData
+            === "undefined") {
+
+
+        alert(
+            "No bill is available to print."
+        );
+
+
+        return;
+    }
 
 
     const printWindow =
             window.open(
                     "",
-                    "",
-                    "width=800,height=700"
+                    "_blank",
+                    "width=850,height=900"
             );
 
 
-    printWindow.document.write(`
+    const html = `
+
+        <!DOCTYPE html>
 
         <html>
 
@@ -926,99 +1911,142 @@ function printBill() {
                 body {
 
                     font-family:
-                            Arial,
-                            sans-serif;
-
-                    padding:
-                            40px;
-
-                    color:
-                            #263238;
-                }
-
-
-                .receipt-header {
-
-                    text-align:
-                            center;
-
-                    margin-bottom:
-                            30px;
-                }
-
-
-                .receipt-header h1 {
-
-                    color:
-                            #064f8c;
-
-                    margin-bottom:
-                            5px;
-                }
-
-
-                .receipt-header p {
-
-                    color:
-                            #078ba5;
+                        Arial,
+                        sans-serif;
 
                     margin:
-                            4px;
+                        45px;
+
+                    color:
+                        #222;
+                }
+
+
+                .receipt {
+
+                    max-width:
+                        700px;
+
+                    margin:
+                        auto;
+                }
+
+
+                .header {
+
+                    text-align:
+                        center;
+
+                    border-bottom:
+                        2px solid #07558e;
+
+                    padding-bottom:
+                        20px;
+
+                    margin-bottom:
+                        25px;
+                }
+
+
+                .header h1 {
+
+                    color:
+                        #07558e;
+
+                    margin:
+                        0;
+                }
+
+
+                .tagline {
+
+                    color:
+                        #0795ad;
+
+                    margin-top:
+                        5px;
+                }
+
+
+                h2 {
+
+                    text-align:
+                        center;
+
+                    margin:
+                        25px 0;
                 }
 
 
                 table {
 
                     width:
-                            100%;
+                        100%;
 
                     border-collapse:
-                            collapse;
-
-                    margin-top:
-                            20px;
+                        collapse;
                 }
 
 
                 td {
 
                     padding:
-                            10px;
+                        11px;
 
                     border-bottom:
-                            1px solid #ddd;
+                        1px solid #ddd;
                 }
 
 
                 td:first-child {
 
                     font-weight:
-                            bold;
+                        bold;
 
                     width:
-                            40%;
+                        42%;
+                }
+
+
+                .total {
+
+                    font-size:
+                        18px;
+
+                    font-weight:
+                        bold;
+
+                    color:
+                        #07558e;
+                }
+
+
+                .paid {
+
+                    color:
+                        #16874d;
+
+                    font-weight:
+                        bold;
                 }
 
 
                 .footer {
 
                     text-align:
-                            center;
+                        center;
 
                     margin-top:
-                            35px;
+                        40px;
 
                     padding-top:
-                            20px;
+                        20px;
 
                     border-top:
-                            1px solid #ddd;
-
-                    color:
-                            #777;
+                        1px solid #ddd;
 
                     font-size:
-                            13px;
+                        13px;
                 }
 
             </style>
@@ -1029,30 +2057,169 @@ function printBill() {
         <body>
 
 
-            <div class="receipt-header">
+            <div class="receipt">
 
-                <h1>
-                    Sunrise Dental Clinic
-                </h1>
 
-                <p>
-                    Your Smile, Our Care
-                </p>
+                <div class="header">
+
+                    <h1>
+                        Sunrise Dental Clinic
+                    </h1>
+
+                    <div class="tagline">
+                        Your Smile, Our Care
+                    </div>
+
+                </div>
+
 
                 <h2>
                     Payment Receipt
                 </h2>
 
-            </div>
+
+                <table>
 
 
-            ${billContent}
+                    <tr>
+
+                        <td>Bill Number</td>
+
+                        <td>
+                            \${receiptData.billNumber}
+                        </td>
+
+                    </tr>
 
 
-            <div class="footer">
+                    <tr>
 
-                Thank you for choosing
-                Sunrise Dental Clinic.
+                        <td>Patient</td>
+
+                        <td>
+                            \${receiptData.patient}
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>Appointment</td>
+
+                        <td>
+                            \${receiptData.appointment}
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>Appointment Date</td>
+
+                        <td>
+                            \${receiptData.appointmentDate}
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>Appointment Time</td>
+
+                        <td>
+                            \${receiptData.appointmentTime}
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>Dentist</td>
+
+                        <td>
+                            \${receiptData.dentist}
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>Treatment</td>
+
+                        <td>
+                            \${receiptData.treatment}
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>Treatment Fee</td>
+
+                        <td>
+                            LKR
+                            \${receiptData.treatmentFee}
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>Consultation Fee</td>
+
+                        <td>
+                            LKR
+                            \${receiptData.consultationFee}
+                        </td>
+
+                    </tr>
+
+
+                    <tr class="total">
+
+                        <td>Total Amount</td>
+
+                        <td>
+                            LKR
+                            \${receiptData.total}
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>Payment Status</td>
+
+                        <td class="paid">
+                            \${receiptData.status}
+                        </td>
+
+                    </tr>
+
+
+                </table>
+
+
+                <div class="footer">
+
+                    Thank you for choosing
+                    Sunrise Dental Clinic.
+
+                    <br><br>
+
+                    This receipt was generated by the
+                    Sunrise Dental Clinic Management System.
+
+                </div>
+
 
             </div>
 
@@ -1061,15 +2228,27 @@ function printBill() {
 
         </html>
 
-    `);
+    `;
 
+
+    printWindow.document.open();
+
+    printWindow.document.write(
+            html
+    );
 
     printWindow.document.close();
 
-    printWindow.focus();
 
-    printWindow.print();
+    printWindow.onload =
+            function () {
+
+                printWindow.focus();
+
+                printWindow.print();
+            };
 }
+
 
 </script>
 

@@ -1,6 +1,7 @@
 package sunrise.dental.web;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -10,12 +11,18 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
+
 @WebServlet(
         name = "BillServlet",
         urlPatterns = {"/bill"}
 )
-public class BillServlet extends HttpServlet {
+public class BillServlet
+        extends HttpServlet {
 
+
+    // =========================================================
+    // DISPLAY BILL PAGE
+    // =========================================================
     @Override
     protected void doGet(
             HttpServletRequest req,
@@ -30,6 +37,9 @@ public class BillServlet extends HttpServlet {
     }
 
 
+    // =========================================================
+    // CREATE BILL / PAY BILL
+    // =========================================================
     @Override
     protected void doPost(
             HttpServletRequest req,
@@ -41,24 +51,33 @@ public class BillServlet extends HttpServlet {
         String action =
                 req.getParameter("action");
 
+
         try {
 
-            // ======================================
+            // =================================================
             // CREATE BILL
-            // ======================================
+            // =================================================
             if ("create".equals(action)) {
 
                 String patientIdStr =
-                        req.getParameter("patientId");
+                        req.getParameter(
+                                "patientId"
+                        );
 
                 String appointmentIdStr =
-                        req.getParameter("appointmentId");
+                        req.getParameter(
+                                "appointmentId"
+                        );
 
                 String treatmentIdStr =
-                        req.getParameter("treatmentId");
+                        req.getParameter(
+                                "treatmentId"
+                        );
 
                 String consultationFeeStr =
-                        req.getParameter("consultationFee");
+                        req.getParameter(
+                                "consultationFee"
+                        );
 
 
                 if (patientIdStr == null
@@ -98,19 +117,87 @@ public class BillServlet extends HttpServlet {
 
 
                 int patientId =
-                        Integer.parseInt(patientIdStr);
+                        Integer.parseInt(
+                                patientIdStr
+                        );
+
 
                 int appointmentId =
-                        Integer.parseInt(appointmentIdStr);
+                        Integer.parseInt(
+                                appointmentIdStr
+                        );
+
 
                 int treatmentId =
-                        Integer.parseInt(treatmentIdStr);
+                        Integer.parseInt(
+                                treatmentIdStr
+                        );
+
 
                 double consultationFee =
                         Double.parseDouble(
                                 consultationFeeStr
                         );
 
+
+                // ---------------------------------------------
+                // SECURITY / DATA VALIDATION
+                // Check selected appointment actually belongs
+                // to selected patient.
+                // ---------------------------------------------
+
+                String appointmentJson =
+                        RestClient.get(
+                                "appointments/"
+                                        + appointmentId
+                        );
+
+
+                JsonObject appointment =
+                        JsonParser
+                                .parseString(
+                                        appointmentJson
+                                )
+                                .getAsJsonObject();
+
+
+                int actualPatientId =
+                        appointment
+                                .get("patientId")
+                                .getAsInt();
+
+
+                String appointmentStatus =
+                        appointment
+                                .get("status")
+                                .getAsString();
+
+
+                if (actualPatientId
+                        != patientId) {
+
+                    throw new IllegalArgumentException(
+                            "The selected appointment "
+                            + "does not belong to this patient."
+                    );
+                }
+
+
+                if (!"Scheduled"
+                        .equalsIgnoreCase(
+                                appointmentStatus
+                        )) {
+
+                    throw new IllegalArgumentException(
+                            "Only scheduled appointments "
+                            + "can be billed."
+                    );
+                }
+
+
+                // ---------------------------------------------
+                // CREATE BILL JSON
+                // ---------------------------------------------
 
                 JsonObject bill =
                         new JsonObject();
@@ -121,15 +208,18 @@ public class BillServlet extends HttpServlet {
                         patientId
                 );
 
+
                 bill.addProperty(
                         "appointmentId",
                         appointmentId
                 );
 
+
                 bill.addProperty(
                         "treatmentId",
                         treatmentId
                 );
+
 
                 bill.addProperty(
                         "consultationFee",
@@ -137,62 +227,10 @@ public class BillServlet extends HttpServlet {
                 );
 
 
-                System.out.println(
-                        "Sending Bill JSON: "
-                                + bill
-                );
-
-
                 String result =
                         RestClient.post(
                                 "bills",
                                 bill.toString()
-                        );
-
-
-                System.out.println(
-                        "Bill REST response: "
-                                + result
-                );
-
-
-                req.setAttribute(
-                        "billResult",
-                        result
-                );
-            }
-
-
-            // ======================================
-            // PAY BILL
-            // ======================================
-            else if ("pay".equals(action)) {
-
-                String billIdStr =
-                        req.getParameter("billId");
-
-
-                if (billIdStr == null
-                        || billIdStr.isBlank()) {
-
-                    throw new IllegalArgumentException(
-                            "Bill ID is missing."
-                    );
-                }
-
-
-                int billId =
-                        Integer.parseInt(
-                                billIdStr
-                        );
-
-
-                String result =
-                        RestClient.put(
-                                "bills/"
-                                        + billId
-                                        + "/pay",
-                                "{}"
                         );
 
 
@@ -204,9 +242,100 @@ public class BillServlet extends HttpServlet {
 
                 req.setAttribute(
                         "success",
-                        "Payment completed successfully."
+                        "Bill created successfully. "
+                        + "Please receive payment "
+                        + "before completing the appointment."
                 );
             }
+
+
+            // =================================================
+            // PAY BILL
+            // =================================================
+            else if ("pay".equals(action)) {
+
+
+                String billIdStr =
+                        req.getParameter(
+                                "billId"
+                        );
+
+
+                String appointmentIdStr =
+                        req.getParameter(
+                                "appointmentId"
+                        );
+
+
+                if (billIdStr == null
+                        || billIdStr.isBlank()) {
+
+                    throw new IllegalArgumentException(
+                            "Bill ID is missing."
+                    );
+                }
+
+
+                if (appointmentIdStr == null
+                        || appointmentIdStr.isBlank()) {
+
+                    throw new IllegalArgumentException(
+                            "Appointment ID is missing."
+                    );
+                }
+
+
+                int billId =
+                        Integer.parseInt(
+                                billIdStr
+                        );
+
+
+                int appointmentId =
+                        Integer.parseInt(
+                                appointmentIdStr
+                        );
+
+
+                // ---------------------------------------------
+                // 1. MARK BILL AS PAID
+                // ---------------------------------------------
+
+                String paidBill =
+                        RestClient.put(
+                                "bills/"
+                                        + billId
+                                        + "/pay",
+                                "{}"
+                        );
+
+
+                // ---------------------------------------------
+                // 2. MARK APPOINTMENT COMPLETED
+                // ---------------------------------------------
+
+                RestClient.put(
+                        "appointments/"
+                                + appointmentId
+                                + "/complete",
+                        "{}"
+                );
+
+
+                req.setAttribute(
+                        "billResult",
+                        paidBill
+                );
+
+
+                req.setAttribute(
+                        "success",
+                        "Payment completed successfully. "
+                        + "The appointment has been marked "
+                        + "as Completed."
+                );
+            }
+
 
             else {
 
@@ -236,10 +365,15 @@ public class BillServlet extends HttpServlet {
     }
 
 
+    // =========================================================
+    // LOAD BILL PAGE DATA
+    // =========================================================
     private void loadData(
             HttpServletRequest req) {
 
+
         try {
+
 
             req.setAttribute(
                     "patientsJson",
@@ -275,11 +409,13 @@ public class BillServlet extends HttpServlet {
 
         } catch (Exception e) {
 
+
             e.printStackTrace();
+
 
             req.setAttribute(
                     "error",
-                    "Unable to load billing data: "
+                    "Unable to load billing information: "
                             + e.getMessage()
             );
         }

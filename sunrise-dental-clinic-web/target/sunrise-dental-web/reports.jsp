@@ -1,6 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 
 <%@ page import="com.google.gson.*" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.util.Date" %>
+
 
 <%
     if (session.getAttribute("user") == null) {
@@ -23,6 +26,49 @@
             (String) request.getAttribute(
                     "json"
             );
+
+
+    String reportTitle =
+            "Clinic Report";
+
+
+    if ("daily-appointments".equals(type)) {
+
+        reportTitle =
+                "Appointment Report";
+    }
+
+    else if ("patients".equals(type)) {
+
+        reportTitle =
+                "Patient Report";
+    }
+
+    else if ("treatments".equals(type)) {
+
+        reportTitle =
+                "Treatment Report";
+    }
+
+    else if ("income".equals(type)) {
+
+        reportTitle =
+                "Income Report";
+    }
+
+    else if ("dentist-appointments".equals(type)) {
+
+        reportTitle =
+                "Dentist Appointment Report";
+    }
+
+
+    String generatedDate =
+            new SimpleDateFormat(
+                    "yyyy-MM-dd HH:mm"
+            ).format(
+                    new Date()
+            );
 %>
 
 
@@ -34,12 +80,20 @@
 
     <meta charset="UTF-8">
 
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
     <title>
         Reports - Sunrise Dental Clinic
     </title>
 
 
     <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
 
         body {
 
@@ -48,56 +102,80 @@
                     Arial,
                     sans-serif;
 
-            margin: 0;
+            margin:
+                    0;
 
             background:
                     #f4f8fb;
+
+            color:
+                    #263238;
         }
 
 
         .container {
 
-            width: 92%;
+            width:
+                    92%;
 
-            max-width: 1200px;
+            max-width:
+                    1200px;
 
-            margin: 30px auto;
+            margin:
+                    30px auto;
         }
 
 
         h1 {
 
-            color: #064f8c;
+            color:
+                    #064f8c;
+        }
+
+
+        h2 {
+
+            color:
+                    #263238;
         }
 
 
         .nav {
 
-            margin-bottom: 25px;
+            margin-bottom:
+                    25px;
         }
 
 
         .nav a {
 
-            color: #087ca7;
+            color:
+                    #087ca7;
 
-            text-decoration: none;
+            text-decoration:
+                    none;
 
-            font-weight: 600;
+            font-weight:
+                    600;
 
-            margin-right: 15px;
+            margin-right:
+                    15px;
         }
 
 
         .card {
 
-            background: white;
+            background:
+                    white;
 
-            padding: 25px;
+            padding:
+                    25px;
 
-            margin-bottom: 25px;
+            margin-bottom:
+                    25px;
 
-            border-radius: 12px;
+            border-radius:
+                    12px;
 
             box-shadow:
                     0 3px 15px
@@ -107,17 +185,21 @@
 
         .report-menu {
 
-            display: flex;
+            display:
+                    flex;
 
-            gap: 10px;
+            gap:
+                    10px;
 
-            flex-wrap: wrap;
+            flex-wrap:
+                    wrap;
         }
 
 
         .report-menu a {
 
-            text-decoration: none;
+            text-decoration:
+                    none;
 
             background:
                     #eaf8fa;
@@ -133,6 +215,9 @@
 
             font-weight:
                     600;
+
+            transition:
+                    0.2s;
         }
 
 
@@ -146,15 +231,89 @@
         }
 
 
+        .report-title-area {
+
+            display:
+                    flex;
+
+            justify-content:
+                    space-between;
+
+            align-items:
+                    center;
+
+            gap:
+                    15px;
+
+            border-bottom:
+                    1px solid #e2e9ed;
+
+            padding-bottom:
+                    15px;
+
+            margin-bottom:
+                    20px;
+        }
+
+
+        .report-title-area h2 {
+
+            margin:
+                    0;
+
+            color:
+                    #064f8c;
+        }
+
+
+        .report-type {
+
+            display:
+                    inline-block;
+
+            margin-top:
+                    6px;
+
+            padding:
+                    5px 11px;
+
+            background:
+                    #eaf8fa;
+
+            color:
+                    #087a91;
+
+            border-radius:
+                    20px;
+
+            font-size:
+                    13px;
+
+            font-weight:
+                    600;
+        }
+
+
+        .table-wrapper {
+
+            overflow-x:
+                    auto;
+        }
+
+
         table {
 
-            width: 100%;
+            width:
+                    100%;
 
             border-collapse:
                     collapse;
 
             margin-top:
                     20px;
+
+            background:
+                    white;
         }
 
 
@@ -175,6 +334,9 @@
 
             text-align:
                     left;
+
+            font-size:
+                    14px;
         }
 
 
@@ -185,10 +347,13 @@
 
             border-bottom:
                     1px solid #ddd;
+
+            font-size:
+                    14px;
         }
 
 
-        tr:hover {
+        tbody tr:hover {
 
             background:
                     #f4f9fb;
@@ -223,10 +388,33 @@
         }
 
 
+        .empty-message {
+
+            padding:
+                    22px;
+
+            text-align:
+                    center;
+
+            background:
+                    #fff4d9;
+
+            color:
+                    #805e00;
+
+            border-radius:
+                    7px;
+        }
+
+
         button {
 
             background:
-                    #064f8c;
+                    linear-gradient(
+                        90deg,
+                        #064f8c,
+                        #0d95ad
+                    );
 
             color:
                     white;
@@ -235,13 +423,347 @@
                     none;
 
             padding:
-                    10px 18px;
+                    11px 20px;
 
             border-radius:
-                    6px;
+                    7px;
 
             cursor:
                     pointer;
+
+            font-size:
+                    14px;
+
+            font-weight:
+                    600;
+        }
+
+
+        button:hover {
+
+            opacity:
+                    0.9;
+        }
+
+
+        .print-actions {
+
+            margin-top:
+                    20px;
+        }
+
+
+        /* ========================================= */
+        /* PRINT HEADER */
+        /* ========================================= */
+
+        .print-only {
+
+            display:
+                    none;
+        }
+
+
+        /* ========================================= */
+        /* PRINT MODE */
+        /* ========================================= */
+
+        @media print {
+
+
+            @page {
+
+                size:
+                        A4 portrait;
+
+                margin:
+                        15mm;
+            }
+
+
+            html,
+            body {
+
+                background:
+                        white !important;
+
+                margin:
+                        0;
+
+                padding:
+                        0;
+            }
+
+
+            body * {
+
+                visibility:
+                        hidden;
+            }
+
+
+            #reportArea,
+            #reportArea * {
+
+                visibility:
+                        visible;
+            }
+
+
+            #reportArea {
+
+                position:
+                        absolute;
+
+                left:
+                        0;
+
+                top:
+                        0;
+
+                width:
+                        100%;
+
+                max-width:
+                        none;
+
+                margin:
+                        0;
+
+                padding:
+                        0;
+
+                border:
+                        none;
+
+                box-shadow:
+                        none;
+
+                background:
+                        white;
+            }
+
+
+            .screen-only,
+            .no-print {
+
+                display:
+                        none !important;
+            }
+
+
+            .print-only {
+
+                display:
+                        block !important;
+
+                visibility:
+                        visible !important;
+            }
+
+
+            .print-header {
+
+                text-align:
+                        center;
+
+                padding-bottom:
+                        18px;
+
+                margin-bottom:
+                        25px;
+
+                border-bottom:
+                        2px solid #064f8c;
+            }
+
+
+            .print-header h1 {
+
+                color:
+                        #064f8c;
+
+                font-size:
+                        26px;
+
+                margin:
+                        0;
+            }
+
+
+            .print-header .tagline {
+
+                color:
+                        #0d95ad;
+
+                margin-top:
+                        5px;
+
+                font-size:
+                        13px;
+            }
+
+
+            .print-header h2 {
+
+                color:
+                        #222;
+
+                margin:
+                        20px 0 5px;
+
+                font-size:
+                        20px;
+            }
+
+
+            .print-header .generated {
+
+                color:
+                        #666;
+
+                font-size:
+                        12px;
+
+                margin:
+                        0;
+            }
+
+
+            .report-title-area {
+
+                display:
+                        none;
+            }
+
+
+            .table-wrapper {
+
+                overflow:
+                        visible;
+            }
+
+
+            table {
+
+                width:
+                        100%;
+
+                border-collapse:
+                        collapse;
+
+                margin-top:
+                        10px;
+
+                font-size:
+                        10pt;
+            }
+
+
+            th {
+
+                background:
+                        #064f8c !important;
+
+                color:
+                        white !important;
+
+                border:
+                        1px solid #b7c0c5;
+
+                padding:
+                        8px;
+
+                -webkit-print-color-adjust:
+                        exact;
+
+                print-color-adjust:
+                        exact;
+            }
+
+
+            td {
+
+                border:
+                        1px solid #c9d0d4;
+
+                padding:
+                        8px;
+
+                font-size:
+                        10pt;
+            }
+
+
+            tr {
+
+                page-break-inside:
+                        avoid;
+            }
+
+
+            .total-card {
+
+                margin-top:
+                        20px;
+
+                border:
+                        1px solid #b7c0c5;
+
+                border-left:
+                        5px solid #0b94aa;
+
+                background:
+                        #f3fbfc !important;
+
+                -webkit-print-color-adjust:
+                        exact;
+
+                print-color-adjust:
+                        exact;
+            }
+
+
+            .print-footer {
+
+                display:
+                        block !important;
+
+                visibility:
+                        visible !important;
+
+                margin-top:
+                        35px;
+
+                padding-top:
+                        15px;
+
+                border-top:
+                        1px solid #ccc;
+
+                text-align:
+                        center;
+
+                font-size:
+                        11px;
+
+                color:
+                        #666;
+            }
+        }
+
+
+        @media(max-width: 750px) {
+
+            .report-title-area {
+
+                flex-direction:
+                        column;
+
+                align-items:
+                        flex-start;
+            }
+
         }
 
     </style>
@@ -255,71 +777,95 @@
 <div class="container">
 
 
-    <h1>
-        Clinic Reports
-    </h1>
+    <!-- ============================================= -->
+    <!-- SCREEN HEADER -->
+    <!-- ============================================= -->
+
+    <div class="screen-only">
 
 
-    <div class="nav">
-
-        <a href="dashboard.jsp">
-            Dashboard
-        </a>
-
-        <a href="patients">
-            Patients
-        </a>
-
-        <a href="appointments">
-            Appointments
-        </a>
-
-        <a href="bill">
-            Billing
-        </a>
-
-        <a href="logout">
-            Logout
-        </a>
-
-    </div>
+        <h1>
+            Clinic Reports
+        </h1>
 
 
+        <div class="nav">
 
-    <div class="card">
-
-
-        <h2>
-            Generate Reports
-        </h2>
-
-
-        <div class="report-menu">
-
-
-            <a href="reports?type=daily-appointments">
-                Appointment Report
+            <a href="dashboard.jsp">
+                Dashboard
             </a>
 
-
-            <a href="reports?type=patients">
-                Patient Report
+            <a href="patients">
+                Patients
             </a>
 
-
-            <a href="reports?type=treatments">
-                Treatment Report
+            <a href="appointments">
+                Appointments
             </a>
 
-
-            <a href="reports?type=income">
-                Income Report
+            <a href="bill">
+                Billing
             </a>
 
-
-            <a href="reports?type=dentist-appointments">
-                Dentist Appointment Report
+            <a href="logout">
+                Logout
             </a>
+
+        </div>
+
+
+
+        <!-- ========================================= -->
+        <!-- REPORT MENU -->
+        <!-- ========================================= -->
+
+        <div class="card">
+
+
+            <h2>
+                Generate Reports
+            </h2>
+
+
+            <div class="report-menu">
+
+
+                <a href="reports?type=daily-appointments">
+
+                    Appointment Report
+
+                </a>
+
+
+                <a href="reports?type=patients">
+
+                    Patient Report
+
+                </a>
+
+
+                <a href="reports?type=treatments">
+
+                    Treatment Report
+
+                </a>
+
+
+                <a href="reports?type=income">
+
+                    Income Report
+
+                </a>
+
+
+                <a href="reports?type=dentist-appointments">
+
+                    Dentist Appointment Report
+
+                </a>
+
+
+            </div>
 
 
         </div>
@@ -329,294 +875,556 @@
 
 
 
+    <!-- ============================================= -->
+    <!-- PRINTABLE REPORT AREA -->
+    <!-- ============================================= -->
+
     <div class="card"
          id="reportArea">
 
 
-        <h2>
-            Report Result
-        </h2>
+
+        <!-- ========================================= -->
+        <!-- PRINT ONLY HEADER -->
+        <!-- ========================================= -->
+
+        <div class="print-only print-header">
+
+
+            <h1>
+                Sunrise Dental Clinic
+            </h1>
+
+
+            <div class="tagline">
+                Your Smile, Our Care
+            </div>
+
+
+            <h2>
+                <%= reportTitle %>
+            </h2>
+
+
+            <p class="generated">
+
+                Generated:
+                <%= generatedDate %>
+
+            </p>
+
+
+        </div>
+
+
+
+        <!-- ========================================= -->
+        <!-- SCREEN REPORT HEADER -->
+        <!-- ========================================= -->
+
+        <div class="report-title-area screen-only">
+
+
+            <div>
+
+                <h2>
+                    Report Result
+                </h2>
+
+
+                <span class="report-type">
+
+                    <%= reportTitle %>
+
+                </span>
+
+            </div>
+
+
+        </div>
+
 
 
         <%
             try {
 
-                JsonArray data =
+
+                if (json == null
+                        || json.isBlank()) {
+
+
+                    throw new Exception(
+                            "No report data"
+                    );
+                }
+
+
+                JsonElement root =
                         JsonParser
-                                .parseString(json)
-                                .getAsJsonArray();
+                                .parseString(
+                                        json
+                                );
 
 
-                // ============================================
+                if (!root.isJsonArray()) {
+
+
+                    throw new Exception(
+                            "Invalid report response"
+                    );
+                }
+
+
+                JsonArray data =
+                        root.getAsJsonArray();
+
+
+
+                // =============================================
                 // PATIENT REPORT
-                // ============================================
+                // =============================================
 
                 if ("patients".equals(type)) {
         %>
 
 
-        <table>
+        <div class="table-wrapper">
 
-            <tr>
 
-                <th>
-                    Patient No.
-                </th>
+            <table>
 
-                <th>
-                    Patient Name
-                </th>
 
-                <th>
-                    Gender
-                </th>
+                <thead>
 
-                <th>
-                    Phone
-                </th>
+                <tr>
 
-                <th>
-                    Email
-                </th>
+                    <th>
+                        Patient No.
+                    </th>
 
-            </tr>
+                    <th>
+                        Patient Name
+                    </th>
 
+                    <th>
+                        Gender
+                    </th>
 
-            <%
-                for (JsonElement el : data) {
+                    <th>
+                        Phone
+                    </th>
 
-                    JsonObject p =
-                            el.getAsJsonObject();
-            %>
+                    <th>
+                        Email
+                    </th>
 
+                </tr>
 
-            <tr>
+                </thead>
 
-                <td>
-                    <%= p.has("patientNumber")
-                        ? p.get("patientNumber").getAsString()
-                        : "" %>
-                </td>
 
-                <td>
-                    <%= p.get("patientName").getAsString() %>
-                </td>
+                <tbody>
 
-                <td>
-                    <%= p.get("gender").getAsString() %>
-                </td>
 
-                <td>
-                    <%= p.get("phone").getAsString() %>
-                </td>
+                <%
+                    for (JsonElement el : data) {
 
-                <td>
-                    <%= p.get("email").getAsString() %>
-                </td>
 
-            </tr>
+                        JsonObject p =
+                                el.getAsJsonObject();
 
 
-            <%
-                }
-            %>
+                        String patientNumber =
+                                p.has("patientNumber")
+                                && !p.get("patientNumber")
+                                     .isJsonNull()
+                                ? p.get("patientNumber")
+                                   .getAsString()
+                                : "";
 
 
-        </table>
+                        String patientName =
+                                p.has("patientName")
+                                && !p.get("patientName")
+                                     .isJsonNull()
+                                ? p.get("patientName")
+                                   .getAsString()
+                                : "";
 
 
-        <%
-            }
+                        String gender =
+                                p.has("gender")
+                                && !p.get("gender")
+                                     .isJsonNull()
+                                ? p.get("gender")
+                                   .getAsString()
+                                : "";
 
 
-            // ============================================
-            // TREATMENT REPORT
-            // ============================================
+                        String phone =
+                                p.has("phone")
+                                && !p.get("phone")
+                                     .isJsonNull()
+                                ? p.get("phone")
+                                   .getAsString()
+                                : "";
 
-            else if ("treatments".equals(type)) {
-        %>
 
+                        String email =
+                                p.has("email")
+                                && !p.get("email")
+                                     .isJsonNull()
+                                ? p.get("email")
+                                   .getAsString()
+                                : "";
+                %>
 
-        <table>
 
-            <tr>
+                <tr>
 
-                <th>
-                    Code
-                </th>
+                    <td>
+                        <%= patientNumber %>
+                    </td>
 
-                <th>
-                    Treatment
-                </th>
+                    <td>
+                        <%= patientName %>
+                    </td>
 
-                <th>
-                    Description
-                </th>
+                    <td>
+                        <%= gender %>
+                    </td>
 
-                <th>
-                    Price
-                </th>
+                    <td>
+                        <%= phone %>
+                    </td>
 
-            </tr>
+                    <td>
+                        <%= email %>
+                    </td>
 
+                </tr>
 
-            <%
-                for (JsonElement el : data) {
 
-                    JsonObject t =
-                            el.getAsJsonObject();
-            %>
-
-
-            <tr>
-
-                <td>
-                    <%= t.get("treatmentCode").getAsString() %>
-                </td>
-
-                <td>
-                    <%= t.get("treatmentName").getAsString() %>
-                </td>
-
-                <td>
-                    <%= t.get("description").getAsString() %>
-                </td>
-
-                <td>
-
-                    Rs.
-                    <%= String.format(
-                            "%.2f",
-                            t.get("price").getAsDouble()
-                    ) %>
-
-                </td>
-
-            </tr>
-
-
-            <%
-                }
-            %>
-
-
-        </table>
-
-
-        <%
-            }
-
-
-            // ============================================
-            // INCOME / BILL REPORT
-            // ============================================
-
-            else if ("income".equals(type)) {
-
-
-                double totalIncome = 0;
-        %>
-
-
-        <table>
-
-            <tr>
-
-                <th>
-                    Bill Number
-                </th>
-
-                <th>
-                    Date
-                </th>
-
-                <th>
-                    Patient ID
-                </th>
-
-                <th>
-                    Amount
-                </th>
-
-                <th>
-                    Status
-                </th>
-
-            </tr>
-
-
-            <%
-                for (JsonElement el : data) {
-
-                    JsonObject b =
-                            el.getAsJsonObject();
-
-
-                    double amount =
-                            b.get(
-                                    "totalAmount"
-                            ).getAsDouble();
-
-
-                    String status =
-                            b.get(
-                                    "paymentStatus"
-                            ).getAsString();
-
-
-                    // Only PAID bills count as income
-                    if ("Paid".equalsIgnoreCase(
-                            status)) {
-
-                        totalIncome +=
-                                amount;
+                <%
                     }
-            %>
+                %>
 
 
-            <tr>
-
-                <td>
-                    <%= b.get("billNumber").getAsString() %>
-                </td>
-
-                <td>
-                    <%= b.get("billDate").getAsString() %>
-                </td>
-
-                <td>
-                    <%= b.get("patientId").getAsInt() %>
-                </td>
-
-                <td>
-
-                    Rs.
-                    <%= String.format(
-                            "%.2f",
-                            amount
-                    ) %>
-
-                </td>
-
-                <td>
-                    <%= status %>
-                </td>
-
-            </tr>
+                </tbody>
 
 
-            <%
+            </table>
+
+
+        </div>
+
+
+        <%
                 }
-            %>
 
 
-        </table>
+
+                // =============================================
+                // TREATMENT REPORT
+                // =============================================
+
+                else if ("treatments".equals(type)) {
+        %>
+
+
+        <div class="table-wrapper">
+
+
+            <table>
+
+
+                <thead>
+
+                <tr>
+
+                    <th>
+                        Code
+                    </th>
+
+                    <th>
+                        Treatment
+                    </th>
+
+                    <th>
+                        Description
+                    </th>
+
+                    <th>
+                        Price
+                    </th>
+
+                </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                <%
+
+                    for (JsonElement el : data) {
+
+
+                        JsonObject t =
+                                el.getAsJsonObject();
+
+
+                        String code =
+                                t.has("treatmentCode")
+                                && !t.get("treatmentCode")
+                                     .isJsonNull()
+                                ? t.get("treatmentCode")
+                                   .getAsString()
+                                : "";
+
+
+                        String name =
+                                t.has("treatmentName")
+                                && !t.get("treatmentName")
+                                     .isJsonNull()
+                                ? t.get("treatmentName")
+                                   .getAsString()
+                                : "";
+
+
+                        String description =
+                                t.has("description")
+                                && !t.get("description")
+                                     .isJsonNull()
+                                ? t.get("description")
+                                   .getAsString()
+                                : "";
+
+
+                        double price =
+                                t.has("price")
+                                && !t.get("price")
+                                     .isJsonNull()
+                                ? t.get("price")
+                                   .getAsDouble()
+                                : 0;
+                %>
+
+
+                <tr>
+
+                    <td>
+                        <%= code %>
+                    </td>
+
+                    <td>
+                        <%= name %>
+                    </td>
+
+                    <td>
+                        <%= description %>
+                    </td>
+
+                    <td>
+
+                        LKR
+                        <%= String.format(
+                                "%.2f",
+                                price
+                        ) %>
+
+                    </td>
+
+                </tr>
+
+
+                <%
+                    }
+                %>
+
+
+                </tbody>
+
+
+            </table>
+
+
+        </div>
+
+
+        <%
+                }
+
+
+
+                // =============================================
+                // INCOME REPORT
+                // =============================================
+
+                else if ("income".equals(type)) {
+
+
+                    double totalIncome =
+                            0;
+        %>
+
+
+        <div class="table-wrapper">
+
+
+            <table>
+
+
+                <thead>
+
+                <tr>
+
+                    <th>
+                        Bill Number
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <th>
+                        Patient ID
+                    </th>
+
+                    <th>
+                        Amount
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                <%
+
+                    for (JsonElement el : data) {
+
+
+                        JsonObject b =
+                                el.getAsJsonObject();
+
+
+                        String billNumber =
+                                b.has("billNumber")
+                                && !b.get("billNumber")
+                                     .isJsonNull()
+                                ? b.get("billNumber")
+                                   .getAsString()
+                                : "";
+
+
+                        String billDate =
+                                b.has("billDate")
+                                && !b.get("billDate")
+                                     .isJsonNull()
+                                ? b.get("billDate")
+                                   .getAsString()
+                                : "";
+
+
+                        int patientId =
+                                b.has("patientId")
+                                && !b.get("patientId")
+                                     .isJsonNull()
+                                ? b.get("patientId")
+                                   .getAsInt()
+                                : 0;
+
+
+                        double amount =
+                                b.has("totalAmount")
+                                && !b.get("totalAmount")
+                                     .isJsonNull()
+                                ? b.get("totalAmount")
+                                   .getAsDouble()
+                                : 0;
+
+
+                        String status =
+                                b.has("paymentStatus")
+                                && !b.get("paymentStatus")
+                                     .isJsonNull()
+                                ? b.get("paymentStatus")
+                                   .getAsString()
+                                : "";
+
+
+                        if ("Paid"
+                                .equalsIgnoreCase(
+                                        status
+                                )) {
+
+
+                            totalIncome +=
+                                    amount;
+                        }
+                %>
+
+
+                <tr>
+
+                    <td>
+                        <%= billNumber %>
+                    </td>
+
+                    <td>
+                        <%= billDate %>
+                    </td>
+
+                    <td>
+                        <%= patientId %>
+                    </td>
+
+                    <td>
+
+                        LKR
+                        <%= String.format(
+                                "%.2f",
+                                amount
+                        ) %>
+
+                    </td>
+
+                    <td>
+                        <%= status %>
+                    </td>
+
+                </tr>
+
+
+                <%
+                    }
+                %>
+
+
+                </tbody>
+
+
+            </table>
+
+
+        </div>
+
 
 
         <div class="total-card">
 
             Total Paid Income:
-            Rs.
+
+            LKR
             <%= String.format(
                     "%.2f",
                     totalIncome
@@ -626,99 +1434,380 @@
 
 
         <%
-            }
+                }
 
 
-            // ============================================
-            // APPOINTMENT REPORT
-            // ============================================
 
-            else {
+                // =============================================
+                // DENTIST APPOINTMENT REPORT
+                // =============================================
+
+                else if ("dentist-appointments".equals(type)) {
         %>
 
 
-        <table>
-
-            <tr>
-
-                <th>
-                    Appointment No.
-                </th>
-
-                <th>
-                    Patient ID
-                </th>
-
-                <th>
-                    Dentist ID
-                </th>
-
-                <th>
-                    Date
-                </th>
-
-                <th>
-                    Time
-                </th>
-
-                <th>
-                    Reason
-                </th>
-
-                <th>
-                    Status
-                </th>
-
-            </tr>
+        <div class="table-wrapper">
 
 
-            <%
-                for (JsonElement el : data) {
-
-                    JsonObject a =
-                            el.getAsJsonObject();
-            %>
+            <table>
 
 
-            <tr>
+                <thead>
 
-                <td>
-                    <%= a.get("appointmentNumber").getAsString() %>
-                </td>
+                <tr>
 
-                <td>
-                    <%= a.get("patientId").getAsInt() %>
-                </td>
+                    <th>
+                        Appointment No.
+                    </th>
 
-                <td>
-                    <%= a.get("dentistId").getAsInt() %>
-                </td>
+                    <th>
+                        Patient
+                    </th>
 
-                <td>
-                    <%= a.get("appointmentDate").getAsString() %>
-                </td>
+                    <th>
+                        Dentist
+                    </th>
 
-                <td>
-                    <%= a.get("appointmentTime").getAsString() %>
-                </td>
+                    <th>
+                        Date
+                    </th>
 
-                <td>
-                    <%= a.get("reason").getAsString() %>
-                </td>
+                    <th>
+                        Time
+                    </th>
 
-                <td>
-                    <%= a.get("status").getAsString() %>
-                </td>
+                    <th>
+                        Status
+                    </th>
 
-            </tr>
+                </tr>
+
+                </thead>
 
 
-            <%
+                <tbody>
+
+
+                <%
+
+                    for (JsonElement el : data) {
+
+
+                        JsonObject a =
+                                el.getAsJsonObject();
+
+
+                        String appointmentNumber =
+                                a.has("appointmentNumber")
+                                && !a.get("appointmentNumber")
+                                     .isJsonNull()
+                                ? a.get("appointmentNumber")
+                                   .getAsString()
+                                : "";
+
+
+                        String patient =
+                                a.has("patientName")
+                                && !a.get("patientName")
+                                     .isJsonNull()
+                                ? a.get("patientName")
+                                   .getAsString()
+                                : a.has("patientId")
+                                  ? "Patient ID "
+                                    + a.get("patientId")
+                                       .getAsInt()
+                                  : "";
+
+
+                        String dentist =
+                                a.has("dentistName")
+                                && !a.get("dentistName")
+                                     .isJsonNull()
+                                ? a.get("dentistName")
+                                   .getAsString()
+                                : a.has("dentistId")
+                                  ? "Dentist ID "
+                                    + a.get("dentistId")
+                                       .getAsInt()
+                                  : "";
+
+
+                        String date =
+                                a.has("appointmentDate")
+                                && !a.get("appointmentDate")
+                                     .isJsonNull()
+                                ? a.get("appointmentDate")
+                                   .getAsString()
+                                : "";
+
+
+                        String time =
+                                a.has("appointmentTime")
+                                && !a.get("appointmentTime")
+                                     .isJsonNull()
+                                ? a.get("appointmentTime")
+                                   .getAsString()
+                                : "";
+
+
+                        if (time.length() >= 5) {
+
+                            time =
+                                    time.substring(
+                                            0,
+                                            5
+                                    );
+                        }
+
+
+                        String status =
+                                a.has("status")
+                                && !a.get("status")
+                                     .isJsonNull()
+                                ? a.get("status")
+                                   .getAsString()
+                                : "";
+                %>
+
+
+                <tr>
+
+                    <td>
+                        <%= appointmentNumber %>
+                    </td>
+
+                    <td>
+                        <%= patient %>
+                    </td>
+
+                    <td>
+                        <%= dentist %>
+                    </td>
+
+                    <td>
+                        <%= date %>
+                    </td>
+
+                    <td>
+                        <%= time %>
+                    </td>
+
+                    <td>
+                        <%= status %>
+                    </td>
+
+                </tr>
+
+
+                <%
+                    }
+                %>
+
+
+                </tbody>
+
+
+            </table>
+
+
+        </div>
+
+
+        <%
                 }
-            %>
 
 
-        </table>
+
+                // =============================================
+                // APPOINTMENT REPORT
+                // =============================================
+
+                else {
+        %>
+
+
+        <div class="table-wrapper">
+
+
+            <table>
+
+
+                <thead>
+
+                <tr>
+
+                    <th>
+                        Appointment No.
+                    </th>
+
+                    <th>
+                        Patient
+                    </th>
+
+                    <th>
+                        Dentist
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <th>
+                        Time
+                    </th>
+
+                    <th>
+                        Reason
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                <%
+
+                    for (JsonElement el : data) {
+
+
+                        JsonObject a =
+                                el.getAsJsonObject();
+
+
+                        String appointmentNumber =
+                                a.has("appointmentNumber")
+                                && !a.get("appointmentNumber")
+                                     .isJsonNull()
+                                ? a.get("appointmentNumber")
+                                   .getAsString()
+                                : "";
+
+
+                        String patient =
+                                a.has("patientName")
+                                && !a.get("patientName")
+                                     .isJsonNull()
+                                ? a.get("patientName")
+                                   .getAsString()
+                                : a.has("patientId")
+                                  ? "Patient ID "
+                                    + a.get("patientId")
+                                       .getAsInt()
+                                  : "";
+
+
+                        String dentist =
+                                a.has("dentistName")
+                                && !a.get("dentistName")
+                                     .isJsonNull()
+                                ? a.get("dentistName")
+                                   .getAsString()
+                                : a.has("dentistId")
+                                  ? "Dentist ID "
+                                    + a.get("dentistId")
+                                       .getAsInt()
+                                  : "";
+
+
+                        String date =
+                                a.has("appointmentDate")
+                                && !a.get("appointmentDate")
+                                     .isJsonNull()
+                                ? a.get("appointmentDate")
+                                   .getAsString()
+                                : "";
+
+
+                        String time =
+                                a.has("appointmentTime")
+                                && !a.get("appointmentTime")
+                                     .isJsonNull()
+                                ? a.get("appointmentTime")
+                                   .getAsString()
+                                : "";
+
+
+                        if (time.length() >= 5) {
+
+                            time =
+                                    time.substring(
+                                            0,
+                                            5
+                                    );
+                        }
+
+
+                        String reason =
+                                a.has("reason")
+                                && !a.get("reason")
+                                     .isJsonNull()
+                                ? a.get("reason")
+                                   .getAsString()
+                                : "";
+
+
+                        String status =
+                                a.has("status")
+                                && !a.get("status")
+                                     .isJsonNull()
+                                ? a.get("status")
+                                   .getAsString()
+                                : "";
+                %>
+
+
+                <tr>
+
+                    <td>
+                        <%= appointmentNumber %>
+                    </td>
+
+                    <td>
+                        <%= patient %>
+                    </td>
+
+                    <td>
+                        <%= dentist %>
+                    </td>
+
+                    <td>
+                        <%= date %>
+                    </td>
+
+                    <td>
+                        <%= time %>
+                    </td>
+
+                    <td>
+                        <%= reason %>
+                    </td>
+
+                    <td>
+                        <%= status %>
+                    </td>
+
+                </tr>
+
+
+                <%
+                    }
+                %>
+
+
+                </tbody>
+
+
+            </table>
+
+
+        </div>
 
 
         <%
@@ -729,28 +1818,92 @@
         %>
 
 
-        <p>
+        <div class="empty-message">
+
             No report data available.
-        </p>
+
+        </div>
 
 
         <%
+
+                System.out.println(
+                        "Report rendering error: "
+                                + e.getMessage()
+                );
             }
         %>
+
+
+
+        <!-- ========================================= -->
+        <!-- PRINT FOOTER -->
+        <!-- ========================================= -->
+
+        <div class="print-only print-footer">
+
+            Sunrise Dental Clinic Management System
+
+            <br>
+
+            Your Smile, Our Care
+
+        </div>
+
+
+
+        <!-- ========================================= -->
+        <!-- PRINT BUTTON - SCREEN ONLY -->
+        <!-- ========================================= -->
+
+        <div class="print-actions no-print">
+
+
+            <button type="button"
+                    onclick="printReport()">
+
+                Print Report
+
+            </button>
+
+
+        </div>
 
 
     </div>
 
 
-
-    <button onclick="window.print()">
-
-        Print Report
-
-    </button>
-
-
 </div>
+
+
+
+<script>
+
+function printReport() {
+
+
+    const reportArea =
+            document.getElementById(
+                    "reportArea"
+            );
+
+
+    if (!reportArea) {
+
+
+        alert(
+                "Please generate a report before printing."
+        );
+
+
+        return;
+    }
+
+
+    window.print();
+}
+
+</script>
 
 
 </body>

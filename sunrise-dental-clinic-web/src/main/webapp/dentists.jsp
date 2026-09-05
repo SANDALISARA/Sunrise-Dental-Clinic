@@ -7,144 +7,387 @@
 
 <%
     if (session.getAttribute("user") == null) {
-        response.sendRedirect("index.jsp");
+
+        response.sendRedirect(
+                "index.jsp"
+        );
+
         return;
     }
 
+
     String json =
-            (String) request.getAttribute("json");
+            (String) request.getAttribute(
+                    "json"
+            );
 %>
 
+
 <!DOCTYPE html>
+
 <html>
 
 <head>
 
     <meta charset="UTF-8">
 
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
     <title>
         Dentists - Sunrise Dental Clinic
     </title>
 
+
     <style>
 
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            background-color: #f5f7fa;
+        * {
+            box-sizing: border-box;
         }
+
+
+        body {
+
+            margin: 0;
+
+            font-family:
+                    "Segoe UI",
+                    Arial,
+                    sans-serif;
+
+            background:
+                    #f4f8fb;
+
+            color:
+                    #263238;
+        }
+
 
         .container {
-            width: 90%;
-            max-width: 1100px;
-            margin: 30px auto;
+
+            width:
+                    94%;
+
+            max-width:
+                    1250px;
+
+            margin:
+                    30px auto;
         }
+
 
         h1 {
-            color: #263238;
+
+            color:
+                    #064f8c;
         }
+
 
         h2 {
-            color: #263238;
+
+            margin-top:
+                    0;
+
+            color:
+                    #263238;
         }
+
 
         .nav {
-            margin-bottom: 25px;
+
+            margin-bottom:
+                    25px;
         }
+
 
         .nav a {
-            text-decoration: none;
-            color: #1976d2;
-            font-weight: bold;
-            margin-right: 15px;
+
+            text-decoration:
+                    none;
+
+            margin-right:
+                    15px;
+
+            color:
+                    #087ca7;
+
+            font-weight:
+                    600;
         }
+
 
         .card {
-            background-color: white;
-            padding: 25px;
-            margin-bottom: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+            background:
+                    white;
+
+            padding:
+                    25px;
+
+            border-radius:
+                    12px;
+
+            margin-bottom:
+                    30px;
+
+            box-shadow:
+                    0 3px 15px
+                    rgba(0,0,0,0.07);
         }
+
 
         .form-grid {
-            display: grid;
+
+            display:
+                    grid;
+
             grid-template-columns:
                     repeat(2, 1fr);
-            gap: 20px;
+
+            gap:
+                    20px;
         }
+
 
         .form-group {
-            display: flex;
-            flex-direction: column;
+
+            display:
+                    flex;
+
+            flex-direction:
+                    column;
         }
+
+
+        .full-width {
+
+            grid-column:
+                    1 / -1;
+        }
+
 
         label {
-            font-weight: bold;
-            margin-bottom: 6px;
+
+            margin-bottom:
+                    6px;
+
+            font-weight:
+                    600;
         }
+
 
         input {
-            padding: 11px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
+
+            padding:
+                    11px;
+
+            border:
+                    1px solid #ccd7dd;
+
+            border-radius:
+                    7px;
+
+            font-size:
+                    14px;
         }
+
+
+        input:focus {
+
+            outline:
+                    none;
+
+            border-color:
+                    #0e9caf;
+
+            box-shadow:
+                    0 0 0 3px
+                    rgba(14,156,175,0.12);
+        }
+
 
         button {
-            background-color: #1976d2;
-            color: white;
-            border: none;
-            padding: 12px 22px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
+
+            border:
+                    none;
+
+            padding:
+                    10px 17px;
+
+            border-radius:
+                    6px;
+
+            cursor:
+                    pointer;
+
+            font-size:
+                    14px;
+
+            font-weight:
+                    600;
+
+            color:
+                    white;
+
+            background:
+                    linear-gradient(
+                            90deg,
+                            #064f8c,
+                            #0d95ad
+                    );
         }
+
 
         button:hover {
-            background-color: #125ea7;
+
+            opacity:
+                    0.9;
         }
+
+
+        .edit-button {
+
+            background:
+                    #078ca4;
+        }
+
+
+        .delete-button {
+
+            background:
+                    #d84343;
+        }
+
+
+        .cancel-button {
+
+            background:
+                    #68777e;
+        }
+
+
+        .edit-card {
+
+            display:
+                    none;
+
+            border-left:
+                    5px solid #f5a400;
+        }
+
+
+        .action-container {
+
+            display:
+                    flex;
+
+            gap:
+                    7px;
+
+            align-items:
+                    center;
+
+            flex-wrap:
+                    wrap;
+        }
+
+
+        .action-container form {
+
+            margin:
+                    0;
+        }
+
+
+        .table-wrapper {
+
+            overflow-x:
+                    auto;
+        }
+
 
         table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+
+            width:
+                    100%;
+
+            border-collapse:
+                    collapse;
+
+            background:
+                    white;
         }
+
 
         th {
-            background-color: #37474f;
-            color: white;
-            padding: 13px;
-            text-align: left;
+
+            background:
+                    linear-gradient(
+                            90deg,
+                            #064f8c,
+                            #087f9a
+                    );
+
+            color:
+                    white;
+
+            padding:
+                    12px;
+
+            text-align:
+                    left;
         }
+
 
         td {
-            padding: 13px;
+
+            padding:
+                    11px;
+
             border-bottom:
-                    1px solid #ddd;
+                    1px solid #dde5e9;
         }
 
-        tr:hover {
-            background-color: #f1f5f9;
+
+        tbody tr:hover {
+
+            background:
+                    #f4fafc;
         }
+
 
         .dentist-number {
-            font-weight: bold;
-            color: #1976d2;
+
+            color:
+                    #087ca7;
+
+            font-weight:
+                    bold;
         }
+
 
         .empty-message {
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 15px;
-            border-radius: 6px;
-            margin-top: 15px;
+
+            padding:
+                    18px;
+
+            background:
+                    #fff4d9;
+
+            border-radius:
+                    7px;
+
+            color:
+                    #805e00;
         }
 
-        @media(max-width: 700px) {
+
+        @media(max-width: 800px) {
 
             .form-grid {
-                grid-template-columns: 1fr;
+
+                grid-template-columns:
+                        1fr;
             }
         }
 
@@ -154,6 +397,7 @@
 
 
 <body>
+
 
 <div class="container">
 
@@ -177,6 +421,10 @@
             Appointments
         </a>
 
+        <a href="treatments">
+            Treatments
+        </a>
+
         <a href="logout">
             Logout
         </a>
@@ -184,9 +432,13 @@
     </div>
 
 
+
+    <!-- ========================================== -->
     <!-- REGISTER DENTIST -->
+    <!-- ========================================== -->
 
     <div class="card">
+
 
         <h2>
             Register Dentist
@@ -196,8 +448,6 @@
         <form method="post"
               action="dentists">
 
-
-            <!-- VERY IMPORTANT -->
 
             <input type="hidden"
                    name="action"
@@ -229,7 +479,7 @@
 
                     <input type="text"
                            name="specialization"
-                           placeholder="e.g. General Dentistry"
+                           placeholder="e.g. Orthodontics"
                            required>
 
                 </div>
@@ -257,15 +507,17 @@
 
                     <input type="email"
                            name="email"
-                           placeholder="e.g. dentist@gmail.com">
+                           placeholder="e.g. dentist@sunrise.lk">
 
                 </div>
 
 
-                <div>
+                <div class="full-width">
 
                     <button type="submit">
+
                         Add Dentist
+
                     </button>
 
                 </div>
@@ -273,14 +525,137 @@
 
             </div>
 
+
         </form>
+
 
     </div>
 
 
-    <!-- DENTIST TABLE -->
+
+    <!-- ========================================== -->
+    <!-- UPDATE DENTIST -->
+    <!-- ========================================== -->
+
+    <div class="card edit-card"
+         id="editDentistCard">
+
+
+        <h2>
+            Update Dentist
+        </h2>
+
+
+        <form method="post"
+              action="dentists">
+
+
+            <input type="hidden"
+                   name="action"
+                   value="update">
+
+
+            <input type="hidden"
+                   name="dentistId"
+                   id="editDentistId">
+
+
+            <div class="form-grid">
+
+
+                <div class="form-group">
+
+                    <label>
+                        Dentist Name
+                    </label>
+
+                    <input type="text"
+                           name="dentistName"
+                           id="editDentistName"
+                           required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Specialization
+                    </label>
+
+                    <input type="text"
+                           name="specialization"
+                           id="editSpecialization"
+                           required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Phone Number
+                    </label>
+
+                    <input type="text"
+                           name="phone"
+                           id="editPhone"
+                           required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Email
+                    </label>
+
+                    <input type="email"
+                           name="email"
+                           id="editEmail">
+
+                </div>
+
+
+                <div class="full-width">
+
+
+                    <button type="submit">
+
+                        Update Dentist
+
+                    </button>
+
+
+                    <button type="button"
+                            class="cancel-button"
+                            onclick="cancelEdit()">
+
+                        Cancel
+
+                    </button>
+
+
+                </div>
+
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
+
+
+    <!-- ========================================== -->
+    <!-- DENTIST LIST -->
+    <!-- ========================================== -->
 
     <div class="card">
+
 
         <h2>
             Registered Dentists
@@ -288,190 +663,363 @@
 
 
         <%
-            boolean hasDentists = false;
+            boolean hasDentists =
+                    false;
 
             try {
+
 
                 if (json != null
                         && !json.isBlank()) {
 
+
                     JsonElement root =
-                            JsonParser.parseString(json);
+                            JsonParser
+                                    .parseString(json);
+
 
                     if (root.isJsonArray()) {
 
+
                         JsonArray dentists =
-                                root.getAsJsonArray();
+                                root
+                                        .getAsJsonArray();
+
 
                         if (!dentists.isEmpty()) {
 
-                            hasDentists = true;
+
+                            hasDentists =
+                                    true;
         %>
 
 
-        <table>
-
-            <thead>
-
-            <tr>
-
-                <th>ID</th>
-
-                <th>
-                    Dentist No.
-                </th>
-
-                <th>
-                    Dentist Name
-                </th>
-
-                <th>
-                    Specialization
-                </th>
-
-                <th>
-                    Phone
-                </th>
-
-                <th>
-                    Email
-                </th>
-
-            </tr>
-
-            </thead>
+        <div class="table-wrapper">
 
 
-            <tbody>
+            <table>
 
 
-            <%
+                <thead>
 
-                for (JsonElement element
-                        : dentists) {
+                <tr>
 
-                    JsonObject d =
-                            element
-                                    .getAsJsonObject();
+                    <th>ID</th>
 
+                    <th>
+                        Dentist No.
+                    </th>
 
-                    String id =
-                            d.has("id")
-                            ? d.get("id")
-                                .getAsString()
-                            : "";
+                    <th>
+                        Dentist Name
+                    </th>
 
+                    <th>
+                        Specialization
+                    </th>
 
-                    String dentistNumber =
-                            d.has("dentistNumber")
-                            && !d.get("dentistNumber")
-                                 .isJsonNull()
-                            ? d.get("dentistNumber")
-                                .getAsString()
-                            : "";
+                    <th>
+                        Phone
+                    </th>
 
+                    <th>
+                        Email
+                    </th>
 
-                    String dentistName =
-                            d.has("dentistName")
-                            && !d.get("dentistName")
-                                 .isJsonNull()
-                            ? d.get("dentistName")
-                                .getAsString()
-                            : "";
+                    <th>
+                        Actions
+                    </th>
 
+                </tr>
 
-                    String specialization =
-                            d.has("specialization")
-                            && !d.get("specialization")
-                                 .isJsonNull()
-                            ? d.get("specialization")
-                                .getAsString()
-                            : "";
+                </thead>
 
 
-                    String phone =
-                            d.has("phone")
-                            && !d.get("phone")
-                                 .isJsonNull()
-                            ? d.get("phone")
-                                .getAsString()
-                            : "";
+                <tbody>
 
 
-                    String email =
-                            d.has("email")
-                            && !d.get("email")
-                                 .isJsonNull()
-                            ? d.get("email")
-                                .getAsString()
-                            : "";
+                <%
 
-            %>
+                    for (
+                            JsonElement element
+                            : dentists) {
 
 
-            <tr>
-
-                <td>
-                    <%= id %>
-                </td>
+                        JsonObject dentist =
+                                element
+                                        .getAsJsonObject();
 
 
-                <td class="dentist-number">
-                    <%= dentistNumber %>
-                </td>
+                        String id =
+                                dentist.has("id")
+                                ? dentist
+                                  .get("id")
+                                  .getAsString()
+                                : "";
 
 
-                <td>
-                    <%= dentistName %>
-                </td>
+                        String dentistNumber =
+                                dentist.has(
+                                        "dentistNumber"
+                                )
+                                && !dentist
+                                   .get(
+                                           "dentistNumber"
+                                   )
+                                   .isJsonNull()
+                                ? dentist
+                                  .get(
+                                          "dentistNumber"
+                                  )
+                                  .getAsString()
+                                : "";
 
 
-                <td>
-                    <%= specialization %>
-                </td>
+                        String dentistName =
+                                dentist.has(
+                                        "dentistName"
+                                )
+                                && !dentist
+                                   .get(
+                                           "dentistName"
+                                   )
+                                   .isJsonNull()
+                                ? dentist
+                                  .get(
+                                          "dentistName"
+                                  )
+                                  .getAsString()
+                                : "";
 
 
-                <td>
-                    <%= phone %>
-                </td>
+                        String specialization =
+                                dentist.has(
+                                        "specialization"
+                                )
+                                && !dentist
+                                   .get(
+                                           "specialization"
+                                   )
+                                   .isJsonNull()
+                                ? dentist
+                                  .get(
+                                          "specialization"
+                                  )
+                                  .getAsString()
+                                : "";
 
 
-                <td>
-                    <%= email %>
-                </td>
+                        String phone =
+                                dentist.has(
+                                        "phone"
+                                )
+                                && !dentist
+                                   .get(
+                                           "phone"
+                                   )
+                                   .isJsonNull()
+                                ? dentist
+                                  .get(
+                                          "phone"
+                                  )
+                                  .getAsString()
+                                : "";
 
-            </tr>
+
+                        String email =
+                                dentist.has(
+                                        "email"
+                                )
+                                && !dentist
+                                   .get(
+                                           "email"
+                                   )
+                                   .isJsonNull()
+                                ? dentist
+                                  .get(
+                                          "email"
+                                  )
+                                  .getAsString()
+                                : "";
 
 
-            <%
+                        String safeName =
+                                dentistName
+                                        .replace(
+                                                "\\",
+                                                "\\\\"
+                                        )
+                                        .replace(
+                                                "'",
+                                                "\\'"
+                                        );
 
-                }
 
-            %>
+                        String safeSpecialization =
+                                specialization
+                                        .replace(
+                                                "\\",
+                                                "\\\\"
+                                        )
+                                        .replace(
+                                                "'",
+                                                "\\'"
+                                        );
 
 
-            </tbody>
+                        String safePhone =
+                                phone
+                                        .replace(
+                                                "\\",
+                                                "\\\\"
+                                        )
+                                        .replace(
+                                                "'",
+                                                "\\'"
+                                        );
 
-        </table>
+
+                        String safeEmail =
+                                email
+                                        .replace(
+                                                "\\",
+                                                "\\\\"
+                                        )
+                                        .replace(
+                                                "'",
+                                                "\\'"
+                                        );
+                %>
+
+
+                <tr>
+
+
+                    <td>
+                        <%= id %>
+                    </td>
+
+
+                    <td class="dentist-number">
+                        <%= dentistNumber %>
+                    </td>
+
+
+                    <td>
+                        <%= dentistName %>
+                    </td>
+
+
+                    <td>
+                        <%= specialization %>
+                    </td>
+
+
+                    <td>
+                        <%= phone %>
+                    </td>
+
+
+                    <td>
+                        <%= email %>
+                    </td>
+
+
+                    <td>
+
+
+                        <div class="action-container">
+
+
+                            <!-- EDIT -->
+
+                            <button type="button"
+                                    class="edit-button"
+                                    onclick="editDentist(
+                                        '<%= id %>',
+                                        '<%= safeName %>',
+                                        '<%= safeSpecialization %>',
+                                        '<%= safePhone %>',
+                                        '<%= safeEmail %>'
+                                    )">
+
+                                Edit
+
+                            </button>
+
+
+
+                            <!-- DELETE -->
+
+                            <form method="post"
+                                  action="dentists"
+                                  onsubmit="
+                                      return confirm(
+                                          'Are you sure you want to delete this dentist?'
+                                      );
+                                  ">
+
+
+                                <input type="hidden"
+                                       name="action"
+                                       value="delete">
+
+
+                                <input type="hidden"
+                                       name="dentistId"
+                                       value="<%= id %>">
+
+
+                                <button type="submit"
+                                        class="delete-button">
+
+                                    Delete
+
+                                </button>
+
+
+                            </form>
+
+
+                        </div>
+
+
+                    </td>
+
+
+                </tr>
+
+
+                <%
+                    }
+                %>
+
+
+                </tbody>
+
+
+            </table>
+
+
+        </div>
 
 
         <%
-
                         }
                     }
                 }
 
             } catch (Exception e) {
 
+
                 System.out.println(
-                        "Dentist JSON error: "
+                        "Dentist JSON parsing error: "
                                 + e.getMessage()
                 );
             }
 
 
             if (!hasDentists) {
-
         %>
 
 
@@ -483,9 +1031,7 @@
 
 
         <%
-
             }
-
         %>
 
 
@@ -493,6 +1039,80 @@
 
 
 </div>
+
+
+
+<script>
+
+
+function editDentist(
+        id,
+        dentistName,
+        specialization,
+        phone,
+        email) {
+
+
+    document.getElementById(
+            "editDentistId"
+    ).value =
+            id;
+
+
+    document.getElementById(
+            "editDentistName"
+    ).value =
+            dentistName;
+
+
+    document.getElementById(
+            "editSpecialization"
+    ).value =
+            specialization;
+
+
+    document.getElementById(
+            "editPhone"
+    ).value =
+            phone;
+
+
+    document.getElementById(
+            "editEmail"
+    ).value =
+            email;
+
+
+    const card =
+            document.getElementById(
+                    "editDentistCard"
+            );
+
+
+    card.style.display =
+            "block";
+
+
+    card.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+}
+
+
+
+function cancelEdit() {
+
+
+    document.getElementById(
+            "editDentistCard"
+    ).style.display =
+            "none";
+}
+
+
+</script>
+
 
 </body>
 

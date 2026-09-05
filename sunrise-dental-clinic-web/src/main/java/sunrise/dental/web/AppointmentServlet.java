@@ -10,16 +10,17 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
+
 @WebServlet(
         name = "AppointmentServlet",
         urlPatterns = {"/appointments"}
 )
-public class AppointmentServlet extends HttpServlet {
+public class AppointmentServlet
+        extends HttpServlet {
+
 
     // =========================================================
-    // DISPLAY APPOINTMENTS PAGE
-    // URL:
-    // /sunrise-dental-clinic-web/appointments
+    // DISPLAY APPOINTMENT PAGE
     // =========================================================
     @Override
     protected void doGet(
@@ -27,57 +28,18 @@ public class AppointmentServlet extends HttpServlet {
             HttpServletResponse resp)
             throws ServletException, IOException {
 
-        System.out.println(
-                "AppointmentServlet doGet() called"
-        );
 
-        try {
+        loadData(req);
 
-            // Call REST service
-            String json =
-                    RestClient.get(
-                            "appointments"
-                    );
 
-            System.out.println(
-                    "Appointment GET response: "
-                            + json
-            );
-
-            // Send JSON to JSP
-            req.setAttribute(
-                    "json",
-                    json
-            );
-
-            // Open appointment JSP
-            req.getRequestDispatcher(
-                    "/appointments.jsp"
-            ).forward(req, resp);
-
-        } catch (Exception e) {
-
-            System.out.println(
-                    "Appointment GET error: "
-                            + e.getMessage()
-            );
-
-            e.printStackTrace();
-
-            req.setAttribute(
-                    "error",
-                    "Unable to load appointment information."
-            );
-
-            req.getRequestDispatcher(
-                    "/appointments.jsp"
-            ).forward(req, resp);
-        }
+        req.getRequestDispatcher(
+                "/appointments.jsp"
+        ).forward(req, resp);
     }
 
 
     // =========================================================
-    // CREATE / UPDATE / CANCEL APPOINTMENT
+    // CREATE / UPDATE / CANCEL
     // =========================================================
     @Override
     protected void doPost(
@@ -85,128 +47,33 @@ public class AppointmentServlet extends HttpServlet {
             HttpServletResponse resp)
             throws ServletException, IOException {
 
+
         req.setCharacterEncoding(
                 "UTF-8"
         );
+
 
         String action =
                 req.getParameter(
                         "action"
                 );
 
-        System.out.println(
-                "AppointmentServlet doPost() called"
-        );
-
-        System.out.println(
-                "Appointment action = "
-                        + action
-        );
-
 
         try {
 
+
             // =================================================
-            // CREATE APPOINTMENT
+            // CREATE
             // =================================================
             if ("create".equals(action)) {
 
+
                 JsonObject appointment =
-                        new JsonObject();
+                        createAppointmentJson(
+                                req
+                        );
 
 
-                // ---------------------------------------------
-                // PATIENT ID
-                // ---------------------------------------------
-                int patientId;
-
-                try {
-
-                    patientId =
-                            Integer.parseInt(
-                                    req.getParameter(
-                                            "patientId"
-                                    )
-                            );
-
-                } catch (Exception e) {
-
-                    patientId = 0;
-                }
-
-
-                // ---------------------------------------------
-                // DENTIST ID
-                // ---------------------------------------------
-                int dentistId;
-
-                try {
-
-                    dentistId =
-                            Integer.parseInt(
-                                    req.getParameter(
-                                            "dentistId"
-                                    )
-                            );
-
-                } catch (Exception e) {
-
-                    dentistId = 0;
-                }
-
-
-                appointment.addProperty(
-                        "patientId",
-                        patientId
-                );
-
-
-                appointment.addProperty(
-                        "dentistId",
-                        dentistId
-                );
-
-
-                appointment.addProperty(
-                        "appointmentDate",
-                        req.getParameter(
-                                "appointmentDate"
-                        )
-                );
-
-
-                appointment.addProperty(
-                        "appointmentTime",
-                        req.getParameter(
-                                "appointmentTime"
-                        )
-                );
-
-
-                appointment.addProperty(
-                        "reason",
-                        req.getParameter(
-                                "reason"
-                        )
-                );
-
-
-                appointment.addProperty(
-                        "status",
-                        "Scheduled"
-                );
-
-
-                System.out.println(
-                        "Sending Appointment JSON:"
-                );
-
-                System.out.println(
-                        appointment.toString()
-                );
-
-
-                // Send JSON to REST API
                 String result =
                         RestClient.post(
                                 "appointments",
@@ -215,19 +82,40 @@ public class AppointmentServlet extends HttpServlet {
 
 
                 System.out.println(
-                        "Appointment POST response:"
+                        "Appointment Create Response: "
+                                + result
                 );
 
-                System.out.println(
-                        result
-                );
+
+                // If REST gives a conflict message,
+                // show it on the page.
+                if (result != null
+                        && result.contains(
+                                "already booked"
+                        )) {
+
+                    req.setAttribute(
+                            "error",
+                            result
+                    );
+                }
+
+
+                else {
+
+                    req.setAttribute(
+                            "success",
+                            "Appointment scheduled successfully."
+                    );
+                }
             }
 
 
             // =================================================
-            // UPDATE APPOINTMENT
+            // UPDATE
             // =================================================
             else if ("update".equals(action)) {
+
 
                 String appointmentId =
                         req.getParameter(
@@ -235,103 +123,19 @@ public class AppointmentServlet extends HttpServlet {
                         );
 
 
+                if (appointmentId == null
+                        || appointmentId.isBlank()) {
+
+                    throw new IllegalArgumentException(
+                            "Appointment ID is missing."
+                    );
+                }
+
+
                 JsonObject appointment =
-                        new JsonObject();
-
-
-                int patientId;
-
-                try {
-
-                    patientId =
-                            Integer.parseInt(
-                                    req.getParameter(
-                                            "patientId"
-                                    )
-                            );
-
-                } catch (Exception e) {
-
-                    patientId = 0;
-                }
-
-
-                int dentistId;
-
-                try {
-
-                    dentistId =
-                            Integer.parseInt(
-                                    req.getParameter(
-                                            "dentistId"
-                                    )
-                            );
-
-                } catch (Exception e) {
-
-                    dentistId = 0;
-                }
-
-
-                appointment.addProperty(
-                        "patientId",
-                        patientId
-                );
-
-
-                appointment.addProperty(
-                        "dentistId",
-                        dentistId
-                );
-
-
-                appointment.addProperty(
-                        "appointmentDate",
-                        req.getParameter(
-                                "appointmentDate"
-                        )
-                );
-
-
-                appointment.addProperty(
-                        "appointmentTime",
-                        req.getParameter(
-                                "appointmentTime"
-                        )
-                );
-
-
-                appointment.addProperty(
-                        "reason",
-                        req.getParameter(
-                                "reason"
-                        )
-                );
-
-
-                String status =
-                        req.getParameter(
-                                "status"
+                        createAppointmentJson(
+                                req
                         );
-
-
-                if (status == null
-                        || status.isBlank()) {
-
-                    status = "Scheduled";
-                }
-
-
-                appointment.addProperty(
-                        "status",
-                        status
-                );
-
-
-                System.out.println(
-                        "Updating Appointment ID: "
-                                + appointmentId
-                );
 
 
                 String result =
@@ -343,16 +147,38 @@ public class AppointmentServlet extends HttpServlet {
 
 
                 System.out.println(
-                        "Appointment UPDATE response: "
+                        "Appointment Update Response: "
                                 + result
                 );
+
+
+                if (result != null
+                        && result.contains(
+                                "already booked"
+                        )) {
+
+                    req.setAttribute(
+                            "error",
+                            result
+                    );
+                }
+
+
+                else {
+
+                    req.setAttribute(
+                            "success",
+                            "Appointment updated successfully."
+                    );
+                }
             }
 
 
             // =================================================
-            // CANCEL APPOINTMENT
+            // CANCEL
             // =================================================
             else if ("cancel".equals(action)) {
+
 
                 String appointmentId =
                         req.getParameter(
@@ -360,55 +186,176 @@ public class AppointmentServlet extends HttpServlet {
                         );
 
 
-                System.out.println(
-                        "Cancelling Appointment ID: "
+                if (appointmentId == null
+                        || appointmentId.isBlank()) {
+
+                    throw new IllegalArgumentException(
+                            "Appointment ID is missing."
+                    );
+                }
+
+
+                RestClient.put(
+                        "appointments/"
                                 + appointmentId
+                                + "/cancel",
+                        "{}"
                 );
 
 
-                String result =
-                        RestClient.put(
-                                "appointments/"
-                                        + appointmentId
-                                        + "/cancel",
-                                "{}"
-                        );
-
-
-                System.out.println(
-                        "Appointment CANCEL response: "
-                                + result
-                );
-            }
-
-
-            // =================================================
-            // UNKNOWN ACTION
-            // =================================================
-            else {
-
-                System.out.println(
-                        "Unknown appointment action: "
-                                + action
+                req.setAttribute(
+                        "success",
+                        "Appointment cancelled successfully."
                 );
             }
 
 
         } catch (Exception e) {
 
-            System.out.println(
-                    "Appointment POST error: "
-                            + e.getMessage()
-            );
 
             e.printStackTrace();
+
+
+            req.setAttribute(
+                    "error",
+                    e.getMessage()
+            );
         }
 
 
-        // Return to appointments page
-        resp.sendRedirect(
-                req.getContextPath()
-                        + "/appointments"
+        // Reload appointment, patient and dentist data
+        loadData(req);
+
+
+        req.getRequestDispatcher(
+                "/appointments.jsp"
+        ).forward(req, resp);
+    }
+
+
+    // =========================================================
+    // LOAD DATA FOR DROPDOWNS + TABLE
+    // =========================================================
+    private void loadData(
+            HttpServletRequest req) {
+
+
+        try {
+
+
+            req.setAttribute(
+                    "appointmentsJson",
+                    RestClient.get(
+                            "appointments"
+                    )
+            );
+
+
+            req.setAttribute(
+                    "patientsJson",
+                    RestClient.get(
+                            "patients"
+                    )
+            );
+
+
+            req.setAttribute(
+                    "dentistsJson",
+                    RestClient.get(
+                            "dentists"
+                    )
+            );
+
+
+        } catch (Exception e) {
+
+
+            e.printStackTrace();
+
+
+            req.setAttribute(
+                    "error",
+                    "Unable to load appointment information."
+            );
+        }
+    }
+
+
+    // =========================================================
+    // BUILD APPOINTMENT JSON
+    // =========================================================
+    private JsonObject createAppointmentJson(
+            HttpServletRequest req) {
+
+
+        JsonObject appointment =
+                new JsonObject();
+
+
+        appointment.addProperty(
+                "patientId",
+                Integer.parseInt(
+                        req.getParameter(
+                                "patientId"
+                        )
+                )
         );
+
+
+        appointment.addProperty(
+                "dentistId",
+                Integer.parseInt(
+                        req.getParameter(
+                                "dentistId"
+                        )
+                )
+        );
+
+
+        appointment.addProperty(
+                "appointmentDate",
+                req.getParameter(
+                        "appointmentDate"
+                )
+        );
+
+
+        appointment.addProperty(
+                "appointmentTime",
+                req.getParameter(
+                        "appointmentTime"
+                )
+        );
+
+
+        appointment.addProperty(
+                "reason",
+                req.getParameter(
+                        "reason"
+                )
+        );
+
+
+        String status =
+                req.getParameter(
+                        "status"
+                );
+
+
+        if (status == null
+                || status.isBlank()) {
+
+            status =
+                    "Scheduled";
+        }
+
+
+        appointment.addProperty(
+                "status",
+                status
+        );
+
+
+        return appointment;
     }
 }
