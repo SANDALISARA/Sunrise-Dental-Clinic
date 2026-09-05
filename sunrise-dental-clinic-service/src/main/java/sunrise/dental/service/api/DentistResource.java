@@ -16,39 +16,44 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
+
 
 @Path("/dentists")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class DentistResource {
 
+
     private final DentistDAO dao =
             new DentistDAO();
 
 
+    // =========================================================
     // GET ALL DENTISTS
+    // =========================================================
     @GET
     public List<DentistDTO> getAllDentists()
             throws Exception {
-
-        System.out.println(
-                "GET /api/dentists called"
-        );
 
         return dao.findAll();
     }
 
 
+    // =========================================================
     // GET DENTIST BY ID
+    // =========================================================
     @GET
     @Path("/{id}")
-    public DentistDTO getDentistById(
+    public DentistDTO getDentist(
             @PathParam("id") int id)
             throws Exception {
 
+
         DentistDTO dentist =
                 dao.findById(id);
+
 
         if (dentist == null) {
 
@@ -57,39 +62,31 @@ public class DentistResource {
             );
         }
 
+
         return dentist;
     }
 
 
+    // =========================================================
     // CREATE DENTIST
+    // =========================================================
     @POST
     public Response createDentist(
             DentistDTO dentist)
             throws Exception {
 
-        System.out.println(
-                "POST /api/dentists called"
-        );
 
-        System.out.println(
-                "Dentist Name: "
-                        + dentist.dentistName
-        );
+        if (dentist == null) {
 
-        System.out.println(
-                "Specialization: "
-                        + dentist.specialization
-        );
-
-        System.out.println(
-                "Phone: "
-                        + dentist.phone
-        );
-
-        System.out.println(
-                "Email: "
-                        + dentist.email
-        );
+            return Response
+                    .status(
+                            Response.Status.BAD_REQUEST
+                    )
+                    .entity(
+                            "Dentist information is required"
+                    )
+                    .build();
+        }
 
 
         if (dentist.dentistName == null
@@ -107,19 +104,25 @@ public class DentistResource {
 
 
         DentistDTO created =
-                dao.create(dentist);
+                dao.create(
+                        dentist
+                );
 
 
         return Response
                 .status(
                         Response.Status.CREATED
                 )
-                .entity(created)
+                .entity(
+                        created
+                )
                 .build();
     }
 
 
+    // =========================================================
     // UPDATE DENTIST
+    // =========================================================
     @PUT
     @Path("/{id}")
     public Response updateDentist(
@@ -127,11 +130,40 @@ public class DentistResource {
             DentistDTO dentist)
             throws Exception {
 
+
+        if (dentist == null) {
+
+            return Response
+                    .status(
+                            Response.Status.BAD_REQUEST
+                    )
+                    .entity(
+                            "Dentist information is required"
+                    )
+                    .build();
+        }
+
+
+        if (dentist.dentistName == null
+                || dentist.dentistName.isBlank()) {
+
+            return Response
+                    .status(
+                            Response.Status.BAD_REQUEST
+                    )
+                    .entity(
+                            "Dentist name is required"
+                    )
+                    .build();
+        }
+
+
         boolean updated =
                 dao.update(
                         id,
                         dentist
                 );
+
 
         if (!updated) {
 
@@ -140,34 +172,63 @@ public class DentistResource {
             );
         }
 
+
         return Response
                 .ok()
                 .entity(
-                        "Dentist updated successfully"
+                        dao.findById(id)
                 )
                 .build();
     }
 
 
+    // =========================================================
     // DELETE DENTIST
+    // =========================================================
     @DELETE
     @Path("/{id}")
     public Response deleteDentist(
             @PathParam("id") int id)
             throws Exception {
 
-        boolean deleted =
-                dao.delete(id);
 
-        if (!deleted) {
+        try {
 
-            throw new NotFoundException(
-                    "Dentist not found"
-            );
+
+            boolean deleted =
+                    dao.delete(id);
+
+
+            if (!deleted) {
+
+                throw new NotFoundException(
+                        "Dentist not found"
+                );
+            }
+
+
+            return Response
+                    .ok()
+                    .entity(
+                            "Dentist deleted successfully"
+                    )
+                    .build();
+
+
+        } catch (
+                SQLIntegrityConstraintViolationException e) {
+
+
+            return Response
+                    .status(
+                            Response.Status.CONFLICT
+                    )
+                    .entity(
+                            "Dentist cannot be deleted because "
+                            + "appointment records are linked "
+                            + "to this dentist."
+                    )
+                    .build();
         }
-
-        return Response
-                .noContent()
-                .build();
     }
 }

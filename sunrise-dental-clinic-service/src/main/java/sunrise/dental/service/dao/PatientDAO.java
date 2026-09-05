@@ -13,24 +13,35 @@ import java.util.List;
 
 public class PatientDAO {
 
+
     // =========================================================
     // GET ALL PATIENTS
     // =========================================================
-    public List<PatientDTO> findAll() throws Exception {
+    public List<PatientDTO> findAll()
+            throws Exception {
 
         String sql =
                 "SELECT * FROM patients ORDER BY id DESC";
 
-        List<PatientDTO> patients = new ArrayList<>();
+        List<PatientDTO> patients =
+                new ArrayList<>();
+
 
         try (
                 Connection c = DB.get();
-                PreparedStatement ps = c.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()
+
+                PreparedStatement ps =
+                        c.prepareStatement(sql);
+
+                ResultSet rs =
+                        ps.executeQuery()
         ) {
 
             while (rs.next()) {
-                patients.add(map(rs));
+
+                patients.add(
+                        map(rs)
+                );
             }
         }
 
@@ -41,21 +52,33 @@ public class PatientDAO {
     // =========================================================
     // GET PATIENT BY ID
     // =========================================================
-    public PatientDTO findById(int id) throws Exception {
+    public PatientDTO findById(int id)
+            throws Exception {
 
         String sql =
                 "SELECT * FROM patients WHERE id = ?";
 
+
         try (
                 Connection c = DB.get();
-                PreparedStatement ps = c.prepareStatement(sql)
+
+                PreparedStatement ps =
+                        c.prepareStatement(sql)
         ) {
 
-            ps.setInt(1, id);
+            ps.setInt(
+                    1,
+                    id
+            );
 
-            try (ResultSet rs = ps.executeQuery()) {
+
+            try (
+                    ResultSet rs =
+                            ps.executeQuery()
+            ) {
 
                 if (rs.next()) {
+
                     return map(rs);
                 }
             }
@@ -66,9 +89,11 @@ public class PatientDAO {
 
 
     // =========================================================
-    // CREATE / REGISTER PATIENT
+    // CREATE PATIENT
     // =========================================================
-    public PatientDTO create(PatientDTO d) throws Exception {
+    public PatientDTO create(
+            PatientDTO patient)
+            throws Exception {
 
         String sql = """
                 INSERT INTO patients
@@ -77,13 +102,14 @@ public class PatientDAO {
                     patient_name,
                     date_of_birth,
                     gender,
-                    address,
                     phone,
                     email,
+                    address,
                     medical_history
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """;
+
 
         try (
                 Connection c = DB.get();
@@ -95,78 +121,69 @@ public class PatientDAO {
                         )
         ) {
 
-            /*
-             * Generate patient number automatically.
-             *
-             * Example:
-             * PAT-1788374000000
-             *
-             * Therefore receptionist does not need
-             * to manually enter a patient number.
-             */
-            if (d.patientNumber == null
-                    || d.patientNumber.isBlank()) {
 
-                d.patientNumber =
+            // ---------------------------------------------
+            // AUTO GENERATE PATIENT NUMBER
+            // ---------------------------------------------
+            if (patient.patientNumber == null
+                    || patient.patientNumber.isBlank()) {
+
+                patient.patientNumber =
                         "PAT-" + System.currentTimeMillis();
             }
 
 
-            // Set database values
             ps.setString(
                     1,
-                    d.patientNumber
+                    patient.patientNumber
             );
+
 
             ps.setString(
                     2,
-                    d.patientName
+                    patient.patientName
             );
+
 
             ps.setString(
                     3,
-                    d.dateOfBirth
+                    patient.dateOfBirth
             );
+
 
             ps.setString(
                     4,
-                    d.gender
+                    patient.gender
             );
+
 
             ps.setString(
                     5,
-                    d.address
+                    patient.phone
             );
+
 
             ps.setString(
                     6,
-                    d.phone
+                    patient.email
             );
+
 
             ps.setString(
                     7,
-                    d.email
+                    patient.address
             );
+
 
             ps.setString(
                     8,
-                    d.medicalHistory
+                    patient.medicalHistory
             );
 
 
-            // Insert patient
-            int rowsInserted =
-                    ps.executeUpdate();
+            ps.executeUpdate();
 
 
-            // Show result in GlassFish Output
-            System.out.println(
-                    "Patient rows inserted: "
-                            + rowsInserted
-            );
-
-
-            // Get automatically generated database ID
             try (
                     ResultSet rs =
                             ps.getGeneratedKeys()
@@ -174,32 +191,18 @@ public class PatientDAO {
 
                 if (rs.next()) {
 
-                    d.id =
+                    patient.id =
                             rs.getInt(1);
                 }
             }
 
 
             System.out.println(
-                    "Patient registered successfully."
-            );
-
-            System.out.println(
-                    "Patient ID: " + d.id
-            );
-
-            System.out.println(
-                    "Patient Number: "
-                            + d.patientNumber
-            );
-
-            System.out.println(
-                    "Patient Name: "
-                            + d.patientName
+                    "Patient created successfully"
             );
 
 
-            return d;
+            return patient;
         }
     }
 
@@ -209,75 +212,90 @@ public class PatientDAO {
     // =========================================================
     public boolean update(
             int id,
-            PatientDTO d)
+            PatientDTO patient)
             throws Exception {
 
         String sql = """
                 UPDATE patients
                 SET
-                    patient_number = ?,
                     patient_name = ?,
                     date_of_birth = ?,
                     gender = ?,
-                    address = ?,
                     phone = ?,
                     email = ?,
+                    address = ?,
                     medical_history = ?
                 WHERE id = ?
                 """;
 
+
         try (
                 Connection c = DB.get();
+
                 PreparedStatement ps =
                         c.prepareStatement(sql)
         ) {
 
+
             ps.setString(
                     1,
-                    d.patientNumber
+                    patient.patientName
             );
+
 
             ps.setString(
                     2,
-                    d.patientName
+                    patient.dateOfBirth
             );
+
 
             ps.setString(
                     3,
-                    d.dateOfBirth
+                    patient.gender
             );
+
 
             ps.setString(
                     4,
-                    d.gender
+                    patient.phone
             );
+
 
             ps.setString(
                     5,
-                    d.address
+                    patient.email
             );
+
 
             ps.setString(
                     6,
-                    d.phone
+                    patient.address
             );
+
 
             ps.setString(
                     7,
-                    d.email
+                    patient.medicalHistory
             );
 
-            ps.setString(
-                    8,
-                    d.medicalHistory
-            );
 
             ps.setInt(
-                    9,
+                    8,
                     id
             );
 
-            return ps.executeUpdate() == 1;
+
+            int rows =
+                    ps.executeUpdate();
+
+
+            System.out.println(
+                    "Patient rows updated: "
+                            + rows
+            );
+
+
+            return rows == 1;
         }
     }
 
@@ -291,8 +309,10 @@ public class PatientDAO {
         String sql =
                 "DELETE FROM patients WHERE id = ?";
 
+
         try (
                 Connection c = DB.get();
+
                 PreparedStatement ps =
                         c.prepareStatement(sql)
         ) {
@@ -302,63 +322,87 @@ public class PatientDAO {
                     id
             );
 
-            return ps.executeUpdate() == 1;
+
+            int rows =
+                    ps.executeUpdate();
+
+
+            System.out.println(
+                    "Patient rows deleted: "
+                            + rows
+            );
+
+
+            return rows == 1;
         }
     }
 
 
     // =========================================================
-    // CONVERT DATABASE ROW TO PatientDTO
+    // RESULTSET -> DTO
     // =========================================================
-    private PatientDTO map(ResultSet rs)
+    private PatientDTO map(
+            ResultSet rs)
             throws Exception {
 
-        PatientDTO d =
+        PatientDTO patient =
                 new PatientDTO();
 
-        d.id =
-                rs.getInt("id");
 
-        d.patientNumber =
+        patient.id =
+                rs.getInt(
+                        "id"
+                );
+
+
+        patient.patientNumber =
                 rs.getString(
                         "patient_number"
                 );
 
-        d.patientName =
+
+        patient.patientName =
                 rs.getString(
                         "patient_name"
                 );
 
-        d.dateOfBirth =
+
+        patient.dateOfBirth =
                 rs.getString(
                         "date_of_birth"
                 );
 
-        d.gender =
+
+        patient.gender =
                 rs.getString(
                         "gender"
                 );
 
-        d.address =
-                rs.getString(
-                        "address"
-                );
 
-        d.phone =
+        patient.phone =
                 rs.getString(
                         "phone"
                 );
 
-        d.email =
+
+        patient.email =
                 rs.getString(
                         "email"
                 );
 
-        d.medicalHistory =
+
+        patient.address =
+                rs.getString(
+                        "address"
+                );
+
+
+        patient.medicalHistory =
                 rs.getString(
                         "medical_history"
                 );
 
-        return d;
+
+        return patient;
     }
 }

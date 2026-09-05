@@ -12,15 +12,19 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
+
 
 @Path("/patients")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class PatientResource {
+
 
     private final PatientDAO dao =
             new PatientDAO();
@@ -28,15 +32,10 @@ public class PatientResource {
 
     // =========================================================
     // GET ALL PATIENTS
-    // URL: GET /api/patients
     // =========================================================
     @GET
     public List<PatientDTO> getAllPatients()
             throws Exception {
-
-        System.out.println(
-                "GET /api/patients called"
-        );
 
         return dao.findAll();
     }
@@ -44,20 +43,16 @@ public class PatientResource {
 
     // =========================================================
     // GET PATIENT BY ID
-    // URL: GET /api/patients/1
     // =========================================================
     @GET
     @Path("/{id}")
-    public PatientDTO getPatientById(
+    public PatientDTO getPatient(
             @PathParam("id") int id)
             throws Exception {
 
-        System.out.println(
-                "GET /api/patients/" + id
-        );
-
         PatientDTO patient =
                 dao.findById(id);
+
 
         if (patient == null) {
 
@@ -66,60 +61,33 @@ public class PatientResource {
             );
         }
 
+
         return patient;
     }
 
 
     // =========================================================
-    // CREATE / REGISTER PATIENT
-    // URL: POST /api/patients
+    // CREATE PATIENT
     // =========================================================
     @POST
     public Response createPatient(
             PatientDTO patient)
             throws Exception {
 
-        System.out.println(
-                "POST /api/patients called"
-        );
 
-        System.out.println(
-                "Patient Name: "
-                        + patient.patientName
-        );
+        if (patient == null) {
 
-        System.out.println(
-                "Date of Birth: "
-                        + patient.dateOfBirth
-        );
-
-        System.out.println(
-                "Gender: "
-                        + patient.gender
-        );
-
-        System.out.println(
-                "Address: "
-                        + patient.address
-        );
-
-        System.out.println(
-                "Phone: "
-                        + patient.phone
-        );
-
-        System.out.println(
-                "Email: "
-                        + patient.email
-        );
-
-        System.out.println(
-                "Medical History: "
-                        + patient.medicalHistory
-        );
+            return Response
+                    .status(
+                            Response.Status.BAD_REQUEST
+                    )
+                    .entity(
+                            "Patient information is required"
+                    )
+                    .build();
+        }
 
 
-        // Basic validation
         if (patient.patientName == null
                 || patient.patientName.isBlank()) {
 
@@ -134,37 +102,21 @@ public class PatientResource {
         }
 
 
-        PatientDTO createdPatient =
+        PatientDTO created =
                 dao.create(patient);
-
-
-        System.out.println(
-                "Patient successfully created"
-        );
-
-        System.out.println(
-                "New Patient ID: "
-                        + createdPatient.id
-        );
-
-        System.out.println(
-                "Patient Number: "
-                        + createdPatient.patientNumber
-        );
 
 
         return Response
                 .status(
                         Response.Status.CREATED
                 )
-                .entity(createdPatient)
+                .entity(created)
                 .build();
     }
 
 
     // =========================================================
     // UPDATE PATIENT
-    // URL: PUT /api/patients/1
     // =========================================================
     @PUT
     @Path("/{id}")
@@ -173,15 +125,40 @@ public class PatientResource {
             PatientDTO patient)
             throws Exception {
 
-        System.out.println(
-                "PUT /api/patients/" + id
-        );
+
+        if (patient == null) {
+
+            return Response
+                    .status(
+                            Response.Status.BAD_REQUEST
+                    )
+                    .entity(
+                            "Patient information is required"
+                    )
+                    .build();
+        }
+
+
+        if (patient.patientName == null
+                || patient.patientName.isBlank()) {
+
+            return Response
+                    .status(
+                            Response.Status.BAD_REQUEST
+                    )
+                    .entity(
+                            "Patient name is required"
+                    )
+                    .build();
+        }
+
 
         boolean updated =
                 dao.update(
                         id,
                         patient
                 );
+
 
         if (!updated) {
 
@@ -190,10 +167,11 @@ public class PatientResource {
             );
         }
 
+
         return Response
                 .ok()
                 .entity(
-                        "Patient updated successfully"
+                        dao.findById(id)
                 )
                 .build();
     }
@@ -201,7 +179,6 @@ public class PatientResource {
 
     // =========================================================
     // DELETE PATIENT
-    // URL: DELETE /api/patients/1
     // =========================================================
     @DELETE
     @Path("/{id}")
@@ -209,22 +186,44 @@ public class PatientResource {
             @PathParam("id") int id)
             throws Exception {
 
-        System.out.println(
-                "DELETE /api/patients/" + id
-        );
 
-        boolean deleted =
-                dao.delete(id);
+        try {
 
-        if (!deleted) {
 
-            throw new NotFoundException(
-                    "Patient not found"
-            );
+            boolean deleted =
+                    dao.delete(id);
+
+
+            if (!deleted) {
+
+                throw new NotFoundException(
+                        "Patient not found"
+                );
+            }
+
+
+            return Response
+                    .ok()
+                    .entity(
+                            "Patient deleted successfully"
+                    )
+                    .build();
+
+
+        } catch (
+                SQLIntegrityConstraintViolationException e) {
+
+
+            return Response
+                    .status(
+                            Response.Status.CONFLICT
+                    )
+                    .entity(
+                            "Patient cannot be deleted because "
+                            + "appointment or billing records "
+                            + "are linked to this patient."
+                    )
+                    .build();
         }
-
-        return Response
-                .noContent()
-                .build();
     }
 }

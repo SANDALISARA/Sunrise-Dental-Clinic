@@ -13,8 +13,12 @@ import java.util.List;
 
 public class DentistDAO {
 
+
+    // =========================================================
     // GET ALL DENTISTS
-    public List<DentistDTO> findAll() throws Exception {
+    // =========================================================
+    public List<DentistDTO> findAll()
+            throws Exception {
 
         String sql =
                 "SELECT * FROM dentists ORDER BY id DESC";
@@ -22,16 +26,22 @@ public class DentistDAO {
         List<DentistDTO> dentists =
                 new ArrayList<>();
 
+
         try (
                 Connection c = DB.get();
+
                 PreparedStatement ps =
                         c.prepareStatement(sql);
+
                 ResultSet rs =
                         ps.executeQuery()
         ) {
 
             while (rs.next()) {
-                dentists.add(map(rs));
+
+                dentists.add(
+                        map(rs)
+                );
             }
         }
 
@@ -39,36 +49,51 @@ public class DentistDAO {
     }
 
 
+    // =========================================================
     // GET DENTIST BY ID
+    // =========================================================
     public DentistDTO findById(int id)
             throws Exception {
 
         String sql =
                 "SELECT * FROM dentists WHERE id = ?";
 
+
         try (
                 Connection c = DB.get();
+
                 PreparedStatement ps =
                         c.prepareStatement(sql)
         ) {
 
-            ps.setInt(1, id);
+            ps.setInt(
+                    1,
+                    id
+            );
 
-            try (ResultSet rs =
-                         ps.executeQuery()) {
+
+            try (
+                    ResultSet rs =
+                            ps.executeQuery()
+            ) {
 
                 if (rs.next()) {
+
                     return map(rs);
                 }
             }
         }
 
+
         return null;
     }
 
 
+    // =========================================================
     // CREATE DENTIST
-    public DentistDTO create(DentistDTO d)
+    // =========================================================
+    public DentistDTO create(
+            DentistDTO dentist)
             throws Exception {
 
         String sql = """
@@ -83,6 +108,7 @@ public class DentistDAO {
                 VALUES (?, ?, ?, ?, ?)
                 """;
 
+
         try (
                 Connection c = DB.get();
 
@@ -93,45 +119,48 @@ public class DentistDAO {
                         )
         ) {
 
-            // Automatically generate dentist number
-            if (d.dentistNumber == null
-                    || d.dentistNumber.isBlank()) {
 
-                d.dentistNumber =
+            // Automatically generate dentist number
+            if (dentist.dentistNumber == null
+                    || dentist.dentistNumber.isBlank()) {
+
+                dentist.dentistNumber =
                         "DEN-" + System.currentTimeMillis();
             }
 
+
             ps.setString(
                     1,
-                    d.dentistNumber
+                    dentist.dentistNumber
             );
+
 
             ps.setString(
                     2,
-                    d.dentistName
+                    dentist.dentistName
             );
+
 
             ps.setString(
                     3,
-                    d.specialization
+                    dentist.specialization
             );
+
 
             ps.setString(
                     4,
-                    d.phone
+                    dentist.phone
             );
+
 
             ps.setString(
                     5,
-                    d.email
+                    dentist.email
             );
 
-            int rows =
-                    ps.executeUpdate();
 
-            System.out.println(
-                    "Dentist rows inserted: " + rows
-            );
+            ps.executeUpdate();
+
 
             try (
                     ResultSet rs =
@@ -139,38 +168,34 @@ public class DentistDAO {
             ) {
 
                 if (rs.next()) {
-                    d.id = rs.getInt(1);
+
+                    dentist.id =
+                            rs.getInt(1);
                 }
             }
 
-            System.out.println(
-                    "Dentist registered successfully"
-            );
 
             System.out.println(
-                    "Dentist ID: " + d.id
+                    "Dentist created successfully."
             );
 
-            System.out.println(
-                    "Dentist Number: "
-                            + d.dentistNumber
-            );
 
-            return d;
+            return dentist;
         }
     }
 
 
+    // =========================================================
     // UPDATE DENTIST
+    // =========================================================
     public boolean update(
             int id,
-            DentistDTO d)
+            DentistDTO dentist)
             throws Exception {
 
         String sql = """
                 UPDATE dentists
                 SET
-                    dentist_number = ?,
                     dentist_name = ?,
                     specialization = ?,
                     phone = ?,
@@ -178,102 +203,147 @@ public class DentistDAO {
                 WHERE id = ?
                 """;
 
+
         try (
                 Connection c = DB.get();
+
                 PreparedStatement ps =
                         c.prepareStatement(sql)
         ) {
 
+
             ps.setString(
                     1,
-                    d.dentistNumber
+                    dentist.dentistName
             );
+
 
             ps.setString(
                     2,
-                    d.dentistName
+                    dentist.specialization
             );
+
 
             ps.setString(
                     3,
-                    d.specialization
+                    dentist.phone
             );
+
 
             ps.setString(
                     4,
-                    d.phone
+                    dentist.email
             );
 
-            ps.setString(
-                    5,
-                    d.email
-            );
 
             ps.setInt(
-                    6,
+                    5,
                     id
             );
 
-            return ps.executeUpdate() == 1;
+
+            int rows =
+                    ps.executeUpdate();
+
+
+            System.out.println(
+                    "Dentist rows updated: "
+                            + rows
+            );
+
+
+            return rows == 1;
         }
     }
 
 
+    // =========================================================
     // DELETE DENTIST
+    // =========================================================
     public boolean delete(int id)
             throws Exception {
 
         String sql =
                 "DELETE FROM dentists WHERE id = ?";
 
+
         try (
                 Connection c = DB.get();
+
                 PreparedStatement ps =
                         c.prepareStatement(sql)
         ) {
 
-            ps.setInt(1, id);
 
-            return ps.executeUpdate() == 1;
+            ps.setInt(
+                    1,
+                    id
+            );
+
+
+            int rows =
+                    ps.executeUpdate();
+
+
+            System.out.println(
+                    "Dentist rows deleted: "
+                            + rows
+            );
+
+
+            return rows == 1;
         }
     }
 
 
-    // MAP DATABASE RESULT TO DTO
-    private DentistDTO map(ResultSet rs)
+    // =========================================================
+    // RESULTSET -> DTO
+    // =========================================================
+    private DentistDTO map(
+            ResultSet rs)
             throws Exception {
 
-        DentistDTO d =
+
+        DentistDTO dentist =
                 new DentistDTO();
 
-        d.id =
-                rs.getInt("id");
 
-        d.dentistNumber =
+        dentist.id =
+                rs.getInt(
+                        "id"
+                );
+
+
+        dentist.dentistNumber =
                 rs.getString(
                         "dentist_number"
                 );
 
-        d.dentistName =
+
+        dentist.dentistName =
                 rs.getString(
                         "dentist_name"
                 );
 
-        d.specialization =
+
+        dentist.specialization =
                 rs.getString(
                         "specialization"
                 );
 
-        d.phone =
+
+        dentist.phone =
                 rs.getString(
                         "phone"
                 );
 
-        d.email =
+
+        dentist.email =
                 rs.getString(
                         "email"
                 );
 
-        return d;
+
+        return dentist;
     }
 }

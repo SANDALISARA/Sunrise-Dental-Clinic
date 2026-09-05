@@ -12,11 +12,11 @@ public class PatientDTO {
 
     public String gender;
 
-    public String address;
-
     public String phone;
 
     public String email;
+
+    public String address;
 
     public String medicalHistory;
 }
